@@ -34,17 +34,6 @@ flowchart LR
 
 ## 사용 방법
 
-```mermaid
-stateDiagram-v2
-    [*] --> idle: 앱 시작
-    idle --> recording: 🎤 녹음 시작
-    idle --> processing: 파일 업로드
-    recording --> processing: ⏹ 녹음 완료
-    processing --> done: 전사 + 후처리 완료
-    processing --> idle: 오류 발생
-    done --> idle: 새로 기록하기
-```
-
 1. **🎤 녹음 시작** — 마이크 권한 허용 후 하루를 편하게 말하기
 2. **⏹ 녹음 완료** — 자동으로 WAV 인코딩 후 백엔드로 전송
 3. **결과 확인** — Reflection 텍스트 확인
