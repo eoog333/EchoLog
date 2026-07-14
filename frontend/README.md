@@ -1,7 +1,7 @@
 # EchoLog Frontend
 
-React 기반의 음성 녹음 및 회고 확인 UI입니다.  
-브라우저 마이크로 녹음하거나 음성 파일을 업로드하면, 백엔드 API를 통해 Reflection을 받아 보여줍니다.
+React 기반의 음성 녹음 및 시간순 기록 확인 UI입니다.
+브라우저 마이크로 녹음하거나 음성 파일을 업로드하면, 백엔드 API를 통해 시간순 기록과 원본 전사를 받아 보여줍니다.
 
 ---
 
@@ -78,7 +78,7 @@ idle → recording → processing → done
 | `idle` | 녹음 시작 버튼 + 파일 업로드 |
 | `recording` | 경과 시간 + 녹음 완료 버튼 |
 | `processing` | 스피너 + 대기 메시지 |
-| `done` | Reflection 텍스트 + 원본 전사 토글 + 시간별 그룹핑 |
+| `done` | 오늘 하루 요약 영역 + 시간순 기록 + 원본 전사 토글 |
 
 파일 업로드도 지원합니다. wav, mp3, m4a, mp4, flac, amr 포맷을 받아 동일한 API 엔드포인트로 전송합니다.
 
@@ -88,8 +88,8 @@ idle → recording → processing → done
 
 ```js
 POST http://localhost:8000/api/transcribe
-  Body: multipart/form-data { file: Blob }
-  Returns: { reflection, raw_transcript, paragraphs, mode, processing_time }
+  Body: multipart/form-data { file: Blob, keywords?: string }
+  Returns: { raw_transcript, timeline, paragraphs, processing, mode, processing_time }
 ```
 
 요청은 최대 5분 30초 동안 기다리며, 시간 초과와 백엔드 연결 실패를 구분해
@@ -118,7 +118,7 @@ npm run dev
 
 1. **🎤 녹음 시작** — 마이크 권한 허용 후 하루를 편하게 말하기
 2. **⏹ 녹음 완료** — 자동으로 WAV 인코딩 후 백엔드로 전송
-3. **결과 확인** — Reflection 텍스트 확인
-4. **원본 전사 보기** (선택) — RTZR STT 원본 + 시간별 사건 그룹 확인
+3. **결과 확인** — 실제 녹음 시각 순서로 정리된 문단 확인
+4. **원본 전사 보기** (선택) — 필터 전 전사문과 비교
 
 또는 **음성 파일 직접 업로드**로도 동일하게 동작합니다.

@@ -78,6 +78,48 @@ body {
   margin-top: 28px;
 }
 
+.keyword-input {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-width: 360px;
+  margin: 0 auto 20px;
+  text-align: left;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.keyword-input span {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.keyword-input em {
+  color: var(--text-secondary);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.keyword-input input {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #4b4652;
+  border-radius: 8px;
+  background: #18161c;
+  color: var(--text-primary);
+  padding: 11px 12px;
+  font: inherit;
+}
+
+.keyword-input input:focus {
+  outline: 2px solid rgba(187, 134, 252, 0.55);
+  border-color: var(--primary-color);
+}
+
+.keyword-input small {
+  color: var(--text-secondary);
+}
+
 .upload-divider {
   color: var(--text-secondary);
   font-size: 0.95rem;
@@ -148,6 +190,43 @@ body {
 .result-card h3 {
   margin-top: 0;
   color: var(--primary-color);
+}
+
+.summary-card h3,
+.flow-card h3 {
+  color: var(--text-primary);
+  font-size: 1.35rem;
+  margin-bottom: 14px;
+}
+
+.summary-placeholder {
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.timeline-record {
+  display: grid;
+  gap: 20px;
+}
+
+.timeline-section {
+  border-left: 2px solid rgba(187, 134, 252, 0.7);
+  padding-left: 14px;
+}
+
+.timeline-label {
+  display: block;
+  color: var(--primary-color);
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.timeline-section p {
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.7;
 }
 
 .content-text {
