@@ -27,9 +27,6 @@ dist-ssr/
 .DS_Store
 *.sw?
 
-# Documentation drafts
-*.md
-
 # 비공개 문서
-과제 명세.md
-사전과제_보고서.md
+docs/명세.md
+docs/보고서.md
