@@ -1,77 +1,82 @@
 # EchoLog
 
-> Speak naturally. Keep the day in order.
+> **Speak naturally. Reflect clearly.**
 
-EchoLog는 하루를 편하게 말하면 RTZR STT API로 전사하고, 실제 발화 시각 순서에 따라 다시 읽기 쉬운 기록으로 보여주는 웹 앱입니다.
+하루를 친구에게 이야기하듯 말하면, RTZR STT API로 전사하고
+읽기 쉬운 **시간순 하루 기록**으로 정리해 주는 웹 앱입니다.
 
-## 무엇을 보여주나
+---
 
-- **오늘 하루 요약**: LLM 또는 Enterprise Insight 연동을 위한 UI 영역입니다. 현재는 준비 상태입니다.
-- **오늘 하루 흐름**: 실제 녹음 시각(`00:00`) 순서대로 정리한 2~3문장 단위 기록입니다.
-- **원본 전사 보기**: 기능 적용 전후를 비교하기 위한 필터 전 전사문입니다. 현재는 테스트·검증용이며 최종 서비스에서는 제거 예정입니다.
+## 프로젝트 소개
 
-## RTZR API 활용
+음성 메모는 자연스럽지만 다시 읽기 어렵고, STT 결과는 구어체라 그대로 보기 불편합니다.
+EchoLog는 RTZR STT의 전처리 기능과 가벼운 후처리를 결합해, 말한 순서를 보존한 채 다시 읽을 수 있는 하루 기록을 제공합니다.
 
-| 기능 | 사용 방식 | 결과에 주는 역할 |
-|---|---|---|
-| Batch STT + Polling | 음성 파일 전사 작업 생성 후 완료까지 조회 | 모든 기록의 기반 전사문 생성 |
-| 간투어 필터 | 정리용 요청에서 활성화 | `어`, `음` 등 불필요한 구어체 감소 |
-| ITN | 정리용 요청에서 활성화 | 숫자·단위·약어를 읽기 좋은 표기로 정리 |
-| 문단 나누기 | 정리용 요청에서 `max: 50`으로 활성화 | 시간순 기록을 만들 짧은 분석 단위 생성 |
-| 단어별 Timestamp | 정리용 요청에서 활성화 | 문장 맨 앞 시간 표현이 실제로 말해진 시각 확인 |
-| 키워드 부스팅 | 사용자가 입력한 `오늘의 주제`를 전달 | 서비스명·고유명사 등 전사 정확도 보조 |
+- 🎤 말하기만 하면 텍스트로 전사
+- ✂️ 추임새 제거 · 숫자 표기 정리 · 인접 중복 정리
+- 🕒 실제 녹음 시각 순서로 문장을 묶은 하루 흐름
+- 📝 필요할 때 원본 전사문 확인
 
-RTZR의 문단 나누기 결과를 그대로 화면에 출력하지는 않습니다. 지나치게 짧게 끊기는 문제를 막기 위해, 앱이 문장 끝 기준으로 다시 2~3문장씩 묶어 보여줍니다.
+---
 
-## 처리 흐름
+## 구조 한눈에 보기
 
 ```mermaid
-flowchart TD
-    A[브라우저 녹음 또는 파일 업로드] --> B[FastAPI]
-    B --> C[원본용 RTZR STT 요청: 필터 OFF]
-    B --> D[정리용 RTZR STT 요청: 필터·ITN·문단·Timestamp ON]
-    C --> E[원본 전사 보기: 테스트용]
-    D --> F[시간순 정리]
-    F --> G[문장 끝 기준 2~3문장 묶기]
-    G --> H[오늘 하루 흐름]
+flowchart LR
+    A[🎤 음성 녹음\n또는 파일 업로드] --> B[React Frontend]
+    B -->|audio| C[FastAPI Backend]
+    C -->|STT 요청| D[(RTZR STT API)]
+    D -->|utterances + timestamps| C
+    C -->|후처리| E[시간순 하루 기록]
+    E --> B
 ```
 
-시간순 정리 규칙은 의도적으로 작게 유지합니다.
+---
 
-1. RTZR의 `start_at` 순서를 보존합니다.
-2. `.`·`?`·`!` 뒤에서만 문단을 나눕니다.
-3. 문단은 2~3문장으로 묶고, 마지막 한 문장 조각은 앞 문단에 붙입니다.
-4. `아침`, `점심`, `저녁` 같은 시간 표현은 **문장 맨 앞**에 있을 때만 분리 힌트로 사용합니다.
-5. 화면에는 시간대 단어 대신 실제 녹음 시각을 일관되게 표시합니다.
+## 사용 방법
 
-문장 순서를 바꾸거나 문법을 고치는 작업은 하지 않습니다. 이는 추후 LLM 요약·정리 단계의 역할입니다.
+1. **🎤 녹음 시작** — 마이크 권한을 허용하고 하루를 편하게 말합니다.
+2. **⏹ 녹음 완료** — 음성 파일을 백엔드로 전송합니다.
+3. **오늘 하루 흐름 확인** — 실제 녹음 시각 순서로 정리된 기록을 읽습니다.
+4. **원본 전사 보기** (선택) — 전사문을 비교·확인합니다.
 
-## 실행 방법
+`오늘의 주제`에는 서비스명이나 고유명사처럼 정확히 인식하고 싶은 단어를 선택적으로 입력할 수 있습니다.
 
-### 1. 백엔드
+음성 파일 직접 업로드(wav, mp3, m4a 등)도 지원합니다.
+
+---
+
+## 시작하기
+
+### 사전 준비
+
+- Python 3.11+
+- Node.js 20.19+ 또는 22.12+
+- [RTZR 개발자 계정](https://developers.rtzr.ai/) 및 API 키
+
+### 1. 저장소 클론
+
+```bash
+git clone https://github.com/eoog333/EchoLog.git
+cd EchoLog
+```
+
+### 2. 백엔드 실행
 
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env
+cp .env.example .env           # .env 파일에 API 키 입력
 uvicorn app.main:app --reload
 ```
 
-`.env`에는 아래 값을 설정합니다.
+`http://localhost:8000/docs`에서 Swagger UI를 확인할 수 있습니다.
 
-```env
-RTZR_CLIENT_ID=your_client_id
-RTZR_CLIENT_SECRET=your_client_secret
-LLM_API_KEY= # 현재 미사용
-```
+### 3. 프론트엔드 실행
 
-백엔드는 `http://localhost:8000`, API 문서는 `http://localhost:8000/docs`에서 확인할 수 있습니다.
-
-### 2. 프론트엔드
-
-새 터미널에서 실행합니다.
+새 터미널을 열고 실행합니다.
 
 ```bash
 cd frontend
@@ -79,9 +84,101 @@ npm install
 npm run dev
 ```
 
-`http://localhost:5173`에서 앱을 열 수 있습니다.
+`http://localhost:5173`에서 앱을 확인할 수 있습니다.
 
-## 검증
+### 환경변수 (`.env`)
+
+```env
+RTZR_CLIENT_ID=your_client_id
+RTZR_CLIENT_SECRET=your_client_secret
+LLM_API_KEY=          # 향후 LLM 연동 확장용 — 현재 미사용
+```
+
+---
+
+## 기술 스택
+
+| 레이어 | 기술 | 비고 |
+|---|---|---|
+| Frontend | React 19 + Vite | 상태 기반 단일 페이지 |
+| 스타일 | Vanilla CSS | 별도 UI 라이브러리 없음 |
+| 오디오 | Web Audio API | 브라우저 녹음 및 파일 업로드 |
+| Backend | FastAPI (Python) | Swagger 자동 문서화 |
+| 환경변수 | pydantic-settings | 타입 안전한 `.env` 로드 |
+| STT | RTZR Batch STT API | 전사·전처리·시각 정보 |
+
+---
+
+## RTZR API 활용
+
+| 기능 | 설정 | EchoLog에서의 역할 |
+|---|---|---|
+| Batch STT + Polling | `/v1/transcribe` 요청 후 상태 조회 | 음성 파일을 비동기로 전사 |
+| 간투어 필터 | `use_disfluency_filter: true` | `어`, `음` 같은 불필요한 표현 감소 |
+| ITN | `use_itn: true` | 숫자·단위·약어를 읽기 쉬운 표기로 변환 |
+| 문단 나누기 | `use_paragraph_splitter: true` | 후처리에 쓸 짧은 전사 단위 생성 |
+| 단어별 Timestamp | `use_word_timestamp: true` | 시간 표현이 나온 실제 발화 시각 확인 |
+| 키워드 부스팅 | `keywords` | 사용자가 입력한 주제·고유명사의 인식 보조 |
+
+---
+
+## 후처리 파이프라인
+
+```mermaid
+flowchart LR
+    A[RTZR utterances] --> B[parse_utterances\nms → 초 변환]
+    B --> C[sort_by_time\nstart_at 기준 정렬]
+    C --> D[remove_duplicates\n인접한 유사 발화만 제거]
+    D --> E[문장 끝 기준\n2~3문장 묶기]
+    E --> F[🕒 시간순 하루 기록]
+```
+
+후처리 원칙은 단순하게 유지합니다.
+
+- 발화 순서와 사실은 바꾸지 않습니다.
+- 문단은 문장 끝에서만 나눕니다.
+- `아침`, `점심`, `저녁` 같은 시간 표현은 문장 맨 앞에 있을 때만 문단 분리의 보조 힌트로 사용합니다.
+- 화면에는 `00:00` 형식의 실제 녹음 시각을 일관되게 표시합니다.
+- 자연스러운 요약·문장 재서술은 향후 LLM 연동으로 확장합니다.
+
+---
+
+## 프로젝트 구조
+
+```text
+EchoLog/
+├── backend/
+│   ├── app/
+│   │   ├── main.py                      # FastAPI 앱, CORS 설정
+│   │   ├── config.py                    # 환경변수 로드
+│   │   ├── routers/transcribe.py        # POST /api/transcribe
+│   │   └── services/
+│   │       ├── rtzr_client.py           # RTZR API 클라이언트
+│   │       ├── transcript_processor.py  # 시간순 기록 후처리
+│   │       └── reflection_generator.py  # 향후 요약 확장 지점
+│   ├── tests/
+│   └── README.md
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx                      # 상태 기반 단일 페이지
+│   │   ├── hooks/useAudioRecorder.js    # 브라우저 녹음
+│   │   └── services/api.js              # 백엔드 API 호출
+│   └── README.md
+└── docs/
+    └── EchoLog_기획_구현.md
+```
+
+---
+
+## 상세 문서
+
+- [Backend README](./backend/README.md) — 모듈 설계, API 스펙, 테스트
+- [Frontend README](./frontend/README.md) — 녹음·상태 관리·화면 구성
+- [초기 기획 문서](./docs/EchoLog_기획_구현.md)
+
+---
+
+## 테스트
 
 ```bash
 cd backend
@@ -91,12 +188,6 @@ pytest tests/ -v
 cd ../frontend
 npm run build
 ```
-
-## 문서
-
-- [백엔드 구현 상세](./backend/README.md)
-- [프론트엔드 구현 상세](./frontend/README.md)
-- [초기 기획 문서](./docs/EchoLog_기획_구현.md)
 
 ## 참고
 
