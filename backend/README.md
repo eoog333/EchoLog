@@ -59,12 +59,28 @@ RTZR API와의 모든 통신을 담당합니다.
 잘못된 응답 형식은 `RTZRError`로 변환하여 API가 일관된 오류를 반환하도록 합니다.
 
 **RTZR 요청 설정:**
+
+원본 전사와 시간순 기록을 같은 오디오로 각각 요청합니다.
+
+원본 전사는 필터를 끄고 사용자가 말한 흐름을 보존합니다.
+
+```json
+{
+  "use_disfluency_filter": false,
+  "use_paragraph_splitter": false,
+  "use_itn": false
+}
+```
+
+시간순 기록용 전사는 RTZR 기능을 적용해 짧은 분석 단위를 만듭니다.
+
 ```json
 {
   "use_disfluency_filter": true,
   "use_paragraph_splitter": true,
-  "paragraph_splitter": { "max": 100 },
-  "use_itn": true
+  "paragraph_splitter": { "max": 50 },
+  "use_itn": true,
+  "use_word_timestamp": true
 }
 ```
 - `use_disfluency_filter` — "어, 음, 그" 같은 추임새 제거
@@ -82,14 +98,14 @@ RTZR utterances
     ↓ parse_utterances()   — utterance 목록 파싱 (ms → 초 변환)
     ↓ sort_by_time()       — start_at 기준 시간순 정렬
     ↓ remove_duplicates()  — 인접한 유사 문장 제거 (임계값 0.8, 최대 간격 3초)
-    ↓ group_into_events()  — 10초 이상 침묵이면 새 사건으로 그룹핑
+    ↓ build_timeline()      — 시간 표현·문장 경계로 시간순 문단 생성
     ↓ ProcessedTranscript  — 후처리 완료 결과
 ```
 
 **설계 포인트:**
 - **중복 제거**: 직전 발화와의 간격이 3초 이내이고 유사도 0.8 이상일 때만 STT 중복으로 판단. 다른 사건에서 반복된 내용은 보존.
-- **사건 그룹핑**: 발화 사이 침묵이 10초 이상이면 다른 사건으로 분리. 하루를 사건 단위로 구조화해 Reflection 품질을 높임.
-- **Timeline 출력**: `• 사건 내용` 형태로 Reflection을 생성.
+- **시간순 문단**: 문장 맨 앞에 `아침`, `저녁`, `퇴근 후`, `오후 3시` 등이 나오면 새 문단의 힌트로 사용합니다. 화면에는 발화의 실제 `start_at`을 `00:42` 형태로 일관되게 표시합니다.
+- **문장 경계**: 문단은 문장이 끝난 지점에서만 2~3문장씩 묶습니다. 침묵 길이와 문맥 유사도 점수는 사용하지 않습니다.
 
 ---
 
@@ -109,8 +125,8 @@ POST /api/transcribe
   Request:  multipart/form-data { file: audio }
   Response: {
     "reflection": str,        # 정제된 회고 텍스트
-    "raw_transcript": str,    # RTZR 원본 전사 텍스트
-    "paragraphs": [...],      # 사건별 그룹 목록 (text, start_at)
+    "raw_transcript": str,    # 필터 전 RTZR 원본 전사 텍스트
+    "timeline": [...],        # 시간순 기록 목록 (label, text, start_at)
     "mode": "timeline",       # 현재 사용 모드
     "processing_time": float  # 처리 시간(초)
   }

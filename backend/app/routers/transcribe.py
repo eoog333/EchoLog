@@ -1,7 +1,7 @@
 import logging
 import time
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -14,6 +14,7 @@ router = APIRouter()
 
 # RTZRClient 인스턴스 (앱 생명주기 동안 재사용 → 토큰 캐싱 효과)
 _rtzr_client: RTZRClient | None = None
+MAX_KEYWORDS = 5
 
 
 def get_rtzr_client() -> RTZRClient:
@@ -37,8 +38,25 @@ def get_raw_transcript(rtzr_result: dict) -> str:
     )
 
 
+def parse_keywords(raw_keywords: str) -> list[str]:
+    """쉼표로 입력된 키워드를 정리해 RTZR 요청 형식으로 변환합니다."""
+    keywords: list[str] = []
+    seen: set[str] = set()
+    for keyword in raw_keywords.split(","):
+        cleaned = keyword.strip()
+        if cleaned and cleaned not in seen:
+            keywords.append(cleaned)
+            seen.add(cleaned)
+        if len(keywords) == MAX_KEYWORDS:
+            break
+    return keywords
+
+
 @router.post("/transcribe")
-async def transcribe_audio(file: UploadFile = File(...)):
+async def transcribe_audio(
+    file: UploadFile = File(...),
+    keywords: str = Form(""),
+):
     """
     음성 파일을 받아 전사하고 Reflection을 반환합니다.
 
@@ -48,8 +66,9 @@ async def transcribe_audio(file: UploadFile = File(...)):
     Response:
         {
             "reflection": str,       # 정제된 회고 텍스트
-            "raw_transcript": str,   # RTZR 원본 전사 텍스트
-            "paragraphs": [...],     # 사건별 그룹 목록
+            "raw_transcript": str,   # RTZR 필터 전 원본 전사 텍스트
+            "timeline": [...],       # 시간순 기록 문단 목록
+            "processing": {...},     # 적용된 후처리 정보
             "mode": str,             # 현재는 "timeline"
             "processing_time": float # 처리 시간(초)
         }
@@ -67,20 +86,31 @@ async def transcribe_audio(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="파일이 비어 있습니다.")
 
     filename = file.filename or "audio.wav"
+    keyword_list = parse_keywords(keywords)
     logger.info(f"파일 수신: {filename} ({len(audio_bytes)} bytes)")
 
     try:
-        # 1. RTZR STT 전사
+        # 1. RTZR 원본 전사: 필터 없이 사용자가 말한 흐름을 보존합니다.
         client = get_rtzr_client()
-        rtzr_result = await run_in_threadpool(
+        raw_rtzr_result = await run_in_threadpool(
             client.transcribe,
             audio_bytes,
             filename=filename,
+            keywords=keyword_list,
+            mode="raw",
         )
-        raw_transcript = get_raw_transcript(rtzr_result)
+        raw_transcript = get_raw_transcript(raw_rtzr_result)
 
-        # 2. Transcript 후처리
-        processed = transcript_processor.process(rtzr_result)
+        # 2. RTZR 정리 전사: 시간순 기록을 만들 분석 단위를 받습니다.
+        clean_rtzr_result = await run_in_threadpool(
+            client.transcribe,
+            audio_bytes,
+            filename=filename,
+            keywords=keyword_list,
+            mode="clean",
+        )
+        processed = transcript_processor.process(clean_rtzr_result)
+        timeline = transcript_processor.build_timeline(processed)
 
         # 3. Reflection 생성
         settings = get_settings()
@@ -91,6 +121,14 @@ async def transcribe_audio(file: UploadFile = File(...)):
         return JSONResponse(content={
             "reflection": result["reflection"],
             "raw_transcript": raw_transcript,
+            "timeline": [
+                {
+                    "label": section.label,
+                    "start_at": section.start_at,
+                    "text": section.text,
+                }
+                for section in timeline
+            ],
             "paragraphs": [
                 {
                     "text": event.text,
@@ -99,6 +137,10 @@ async def transcribe_audio(file: UploadFile = File(...)):
                 for event in processed.events
             ],
             "mode": result["mode"],
+            "processing": {
+                "paragraph_count": len(processed.events),
+                "duplicate_count": processed.duplicate_count,
+            },
             "processing_time": processing_time,
         })
 

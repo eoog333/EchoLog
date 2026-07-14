@@ -2,6 +2,8 @@
 
 > **Speak naturally. Reflect clearly.**
 
+> **문서 상태:** 이 문서는 초기 기획안입니다. 현재 구현의 API 설정과 시간순 기록 로직은 루트 README 및 백엔드 README를 기준으로 확인합니다.
+
 ---
 
 ## 1. 프로젝트 소개

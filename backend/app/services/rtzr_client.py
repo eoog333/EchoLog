@@ -5,9 +5,10 @@ RTZR STT API Client
 Batch STT 가이드: https://developers.rtzr.ai/docs/stt-file/
 """
 
+import logging
+import copy
 import json
 import time
-import logging
 from datetime import datetime, timedelta
 
 import requests
@@ -17,16 +18,39 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://openapi.vito.ai"
 REQUEST_TIMEOUT = (10, 60)  # 연결 10초, 응답 60초
 
-# RTZR STT 요청 설정
-# - use_disfluency_filter: 추임새(어, 음, 그) 제거
-# - use_paragraph_splitter: 의미 단위 문단 분리 (후처리에 유리)
-# - use_itn: 숫자/단위 표기 변환 (예: 삼 → 3)
-TRANSCRIBE_CONFIG = {
+# 원본 전사용 설정: 사용자가 말한 흐름을 최대한 그대로 보존합니다.
+RAW_TRANSCRIBE_CONFIG = {
+    "use_disfluency_filter": False,
+    "use_paragraph_splitter": False,
+    "use_itn": False,
+}
+
+# 시간순 기록용 설정: RTZR이 읽기 좋은 분석 단위를 만들도록 요청합니다.
+CLEAN_TRANSCRIBE_CONFIG = {
     "use_disfluency_filter": True,
     "use_paragraph_splitter": True,
-    "paragraph_splitter": {"max": 100},
+    "paragraph_splitter": {"max": 50},
     "use_itn": True,
+    "use_word_timestamp": True,
 }
+
+
+def build_transcribe_config(
+    keywords: list[str] | None = None,
+    mode: str = "clean",
+) -> dict:
+    """원본 또는 시간순 기록용 RTZR 설정을 만듭니다."""
+    if mode == "raw":
+        config = copy.deepcopy(RAW_TRANSCRIBE_CONFIG)
+    elif mode == "clean":
+        config = copy.deepcopy(CLEAN_TRANSCRIBE_CONFIG)
+    else:
+        raise ValueError(f"지원하지 않는 전사 모드입니다: {mode}")
+
+    cleaned_keywords = [keyword.strip() for keyword in keywords or [] if keyword.strip()]
+    if cleaned_keywords:
+        config["keywords"] = cleaned_keywords
+    return config
 
 
 class RTZRError(Exception):
@@ -88,7 +112,13 @@ class RTZRClient:
         logger.info("RTZR 인증 토큰 발급 완료")
         return self._token
 
-    def submit_transcription(self, audio_bytes: bytes, filename: str = "audio.wav") -> str:
+    def submit_transcription(
+        self,
+        audio_bytes: bytes,
+        filename: str = "audio.wav",
+        keywords: list[str] | None = None,
+        mode: str = "clean",
+    ) -> str:
         """
         음성 파일 전사 요청 → transcribe_id 반환.
 
@@ -104,7 +134,12 @@ class RTZRClient:
                     "accept": "application/json",
                     "Authorization": f"Bearer {token}",
                 },
-                data={"config": json.dumps(TRANSCRIBE_CONFIG)},
+                data={
+                    "config": json.dumps(
+                        build_transcribe_config(keywords, mode),
+                        ensure_ascii=False,
+                    )
+                },
                 files={"file": (filename, audio_bytes)},
                 timeout=REQUEST_TIMEOUT,
             )
@@ -161,6 +196,8 @@ class RTZRClient:
         filename: str = "audio.wav",
         poll_interval: int = 3,
         max_wait: int = 300,
+        keywords: list[str] | None = None,
+        mode: str = "clean",
     ) -> dict:
         """
         음성 파일 전사 요청 후 완료까지 폴링.
@@ -170,11 +207,13 @@ class RTZRClient:
             filename: 파일명 (확장자로 포맷 추정)
             poll_interval: 폴링 간격 (초)
             max_wait: 최대 대기 시간 (초)
+            keywords: 인식 정확도 향상을 위한 선택 키워드
+            mode: "raw"(원본 전사) 또는 "clean"(시간순 기록용 전사)
 
         Returns:
             RTZR 전사 결과 dict (results.utterances 포함)
         """
-        transcribe_id = self.submit_transcription(audio_bytes, filename)
+        transcribe_id = self.submit_transcription(audio_bytes, filename, keywords, mode)
 
         started_at = time.monotonic()
         deadline = started_at + max_wait

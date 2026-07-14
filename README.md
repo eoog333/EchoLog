@@ -1,79 +1,77 @@
 # EchoLog
 
-> **Speak naturally. Reflect clearly.**
+> Speak naturally. Keep the day in order.
 
-하루를 친구에게 이야기하듯 말하면, RTZR STT API로 전사하고  
-후처리 파이프라인을 통해 읽기 좋은 **회고(Reflection)** 로 재구성해주는 웹 앱입니다.
+EchoLog는 하루를 편하게 말하면 RTZR STT API로 전사하고, 실제 발화 시각 순서에 따라 다시 읽기 쉬운 기록으로 보여주는 웹 앱입니다.
 
----
+## 무엇을 보여주나
 
-## 프로젝트 소개
+- **오늘 하루 요약**: LLM 또는 Enterprise Insight 연동을 위한 UI 영역입니다. 현재는 준비 상태입니다.
+- **오늘 하루 흐름**: 실제 녹음 시각(`00:00`) 순서대로 정리한 2~3문장 단위 기록입니다.
+- **원본 전사 보기**: 기능 적용 전후를 비교하기 위한 필터 전 전사문입니다. 현재는 테스트·검증용이며 최종 서비스에서는 제거 예정입니다.
 
-음성 메모는 자연스럽지만 다시 읽기 어렵고, STT 결과는 구어체라 그대로 쓰기엔 불편합니다.  
-EchoLog는 이 문제를 **후처리 파이프라인**으로 해결합니다.
+## RTZR API 활용
 
-- 🎤 말하기만 하면 텍스트로 전사
-- ✂️ 추임새 제거 · 중복 정리 · 사건 단위 그룹핑
-- 📝 읽기 좋은 Reflection으로 재구성
+| 기능 | 사용 방식 | 결과에 주는 역할 |
+|---|---|---|
+| Batch STT + Polling | 음성 파일 전사 작업 생성 후 완료까지 조회 | 모든 기록의 기반 전사문 생성 |
+| 간투어 필터 | 정리용 요청에서 활성화 | `어`, `음` 등 불필요한 구어체 감소 |
+| ITN | 정리용 요청에서 활성화 | 숫자·단위·약어를 읽기 좋은 표기로 정리 |
+| 문단 나누기 | 정리용 요청에서 `max: 50`으로 활성화 | 시간순 기록을 만들 짧은 분석 단위 생성 |
+| 단어별 Timestamp | 정리용 요청에서 활성화 | 문장 맨 앞 시간 표현이 실제로 말해진 시각 확인 |
+| 키워드 부스팅 | 사용자가 입력한 `오늘의 주제`를 전달 | 서비스명·고유명사 등 전사 정확도 보조 |
 
----
+RTZR의 문단 나누기 결과를 그대로 화면에 출력하지는 않습니다. 지나치게 짧게 끊기는 문제를 막기 위해, 앱이 문장 끝 기준으로 다시 2~3문장씩 묶어 보여줍니다.
 
-## 구조 한눈에 보기
+## 처리 흐름
 
 ```mermaid
-flowchart LR
-    A[🎤 음성 녹음\n또는 파일 업로드] --> B[React Frontend]
-    B -->|audio| C[FastAPI Backend]
-    C -->|STT 요청| D[(RTZR STT API)]
-    D -->|utterances| C
-    C -->|후처리 + Reflection| B
-    B --> E[📝 결과 화면]
+flowchart TD
+    A[브라우저 녹음 또는 파일 업로드] --> B[FastAPI]
+    B --> C[원본용 RTZR STT 요청: 필터 OFF]
+    B --> D[정리용 RTZR STT 요청: 필터·ITN·문단·Timestamp ON]
+    C --> E[원본 전사 보기: 테스트용]
+    D --> F[시간순 정리]
+    F --> G[문장 끝 기준 2~3문장 묶기]
+    G --> H[오늘 하루 흐름]
 ```
 
----
+시간순 정리 규칙은 의도적으로 작게 유지합니다.
 
-## 사용 방법
+1. RTZR의 `start_at` 순서를 보존합니다.
+2. `.`·`?`·`!` 뒤에서만 문단을 나눕니다.
+3. 문단은 2~3문장으로 묶고, 마지막 한 문장 조각은 앞 문단에 붙입니다.
+4. `아침`, `점심`, `저녁` 같은 시간 표현은 **문장 맨 앞**에 있을 때만 분리 힌트로 사용합니다.
+5. 화면에는 시간대 단어 대신 실제 녹음 시각을 일관되게 표시합니다.
 
-1. **🎤 녹음 시작** — 마이크 권한 허용 후 하루를 편하게 말하기
-2. **⏹ 녹음 완료** — 자동으로 WAV 인코딩 후 백엔드로 전송
-3. **결과 확인** — Reflection 텍스트 확인
-4. **원본 전사 보기** (선택) — RTZR STT 원본 + 사건별 타임라인 확인
+문장 순서를 바꾸거나 문법을 고치는 작업은 하지 않습니다. 이는 추후 LLM 요약·정리 단계의 역할입니다.
 
-> 음성 파일 직접 업로드(wav, mp3, m4a 등)도 지원합니다.
+## 실행 방법
 
----
-
-## 시작하기
-
-### 사전 준비
-
-- Python 3.11+
-- Node.js 20.19+ 또는 22.12+
-- [RTZR 개발자 계정](https://developers.rtzr.ai/) 및 API 키
-
-### 1. 저장소 클론
-
-```bash
-git clone https://github.com/eoog333/EchoLog.git
-cd EchoLog
-```
-
-### 2. 백엔드
+### 1. 백엔드
 
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env           # .env 파일에 API 키 입력
+cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
-→ `http://localhost:8000/docs` 에서 Swagger UI 확인
+`.env`에는 아래 값을 설정합니다.
 
-### 3. 프론트엔드
+```env
+RTZR_CLIENT_ID=your_client_id
+RTZR_CLIENT_SECRET=your_client_secret
+LLM_API_KEY= # 현재 미사용
+```
 
-새 터미널을 열고:
+백엔드는 `http://localhost:8000`, API 문서는 `http://localhost:8000/docs`에서 확인할 수 있습니다.
+
+### 2. 프론트엔드
+
+새 터미널에서 실행합니다.
 
 ```bash
 cd frontend
@@ -81,140 +79,27 @@ npm install
 npm run dev
 ```
 
-→ `http://localhost:5173` 에서 앱 확인
+`http://localhost:5173`에서 앱을 열 수 있습니다.
 
-### 환경변수 (.env)
-
-```env
-RTZR_CLIENT_ID=your_client_id
-RTZR_CLIENT_SECRET=your_client_secret
-LLM_API_KEY=          # 향후 LLM 연동 확장용 — 현재는 사용하지 않음
-```
-
----
-
-## 기술 스택
-
-| 레이어 | 기술 | 비고 |
-|--------|------|------|
-| Frontend | React 19 + Vite | 상태 기반 단일 페이지 |
-| 스타일 | Vanilla CSS | 별도 UI 라이브러리 없음 |
-| 오디오 | Web Audio API | WAV 직접 인코딩 (브라우저 호환성) |
-| Backend | FastAPI (Python) | Swagger 자동 문서화 |
-| 환경변수 | pydantic-settings | 타입 안전한 `.env` 로드 |
-| STT | RTZR Batch STT API | 추임새 제거, 문단 분리 |
-
----
-
-## 상세 아키텍처
-
-```mermaid
-flowchart TD
-    A[🎤 브라우저 녹음 / 파일 업로드] --> B[React Frontend]
-    B -->|POST /api/transcribe\nmultipart/form-data| C[FastAPI Backend]
-
-    C -->|POST /v1/authenticate| D[(RTZR Auth API)]
-    D -->|JWT Token 6h| C
-
-    C -->|POST /v1/transcribe| E[(RTZR Batch STT)]
-    E -->|transcribe_id| C
-    C -->|GET /v1/transcribe/id\npolling 3s| E
-    E -->|utterances| C
-
-    C --> F[Transcript Post Processor]
-    F --> G[Reflection Generator]
-    G -->|reflection, paragraphs| B
-    B --> H[📝 결과 화면]
-```
-
-### RTZR API 시퀀스
-
-```mermaid
-sequenceDiagram
-    participant FE as Frontend
-    participant BE as FastAPI
-    participant AUTH as RTZR Auth
-    participant STT as RTZR STT
-
-    FE->>BE: POST /api/transcribe (audio)
-    BE->>AUTH: POST /v1/authenticate
-    AUTH-->>BE: JWT Token (6시간 유효)
-    BE->>STT: POST /v1/transcribe
-    STT-->>BE: transcribe_id
-    loop Polling (3초 간격, 최대 5분)
-        BE->>STT: GET /v1/transcribe/{id}
-        STT-->>BE: status: transcribing...
-    end
-    STT-->>BE: status: completed, utterances
-    BE->>BE: Post Processing
-    BE-->>FE: reflection, paragraphs, raw_transcript
-```
-
----
-
-## 후처리 파이프라인
-
-```mermaid
-flowchart LR
-    A[RTZR utterances] --> B[parse_utterances\nms → 초 변환]
-    B --> C[sort_by_time\nstart_at 기준 정렬]
-    C --> D[remove_duplicates\n인접 발화 유사도 0.8 이상 제거]
-    D --> E[group_into_events\n10초 침묵 → 새 사건]
-    E --> F[Timeline 출력]
-    F --> I[📝 Reflection]
-    E -. 향후 확장 .-> G[LLM 서술체 변환]
-    G -.-> I
-```
-
-> 현재 버전은 Timeline 모드로 동작하며, LLM 기반 서술체 변환은 향후 확장 예정입니다.
-
-| 기능 | 설정값 | 목적 |
-|------|--------|------|
-| `use_disfluency_filter` | `true` | 추임새(어, 음, 그) 제거 |
-| `use_paragraph_splitter` | `true` | 의미 단위 문단 분리 |
-| `use_itn` | `true` | 숫자/단위 표기 변환 |
-
----
-
-## 프로젝트 구조
-
-```
-EchoLog/
-├── backend/
-│   ├── app/
-│   │   ├── main.py                      # FastAPI 앱, CORS 설정
-│   │   ├── config.py                    # 환경변수 로드
-│   │   ├── routers/transcribe.py        # POST /api/transcribe
-│   │   └── services/
-│   │       ├── rtzr_client.py           # RTZR API 클라이언트
-│   │       ├── transcript_processor.py  # 후처리 파이프라인 ⭐
-│   │       └── reflection_generator.py  # Reflection 생성
-│   ├── tests/
-│   └── README.md
-│
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx                      # 상태 기반 단일 페이지
-│   │   ├── hooks/useAudioRecorder.js    # 브라우저 녹음 + WAV 인코딩
-│   │   └── services/api.js             # 백엔드 API 호출
-│   └── README.md
-│
-└── docs/
-    └── EchoLog_기획_구현.md
-```
-
----
-
-## 상세 문서
-
-- [Backend README](./backend/README.md) — 모듈 설계, API 스펙, 테스트
-- [Frontend README](./frontend/README.md) — Web Audio API, 상태 관리
-
----
-
-## 테스트
+## 검증
 
 ```bash
 cd backend
+source .venv/bin/activate
 pytest tests/ -v
+
+cd ../frontend
+npm run build
 ```
+
+## 문서
+
+- [백엔드 구현 상세](./backend/README.md)
+- [프론트엔드 구현 상세](./frontend/README.md)
+- [초기 기획 문서](./docs/EchoLog_기획_구현.md)
+
+## 참고
+
+- [RTZR Batch STT](https://developers.rtzr.ai/docs/stt-file/)
+- [RTZR 문단 나누기](https://developers.rtzr.ai/docs/stt-file/paragraph-splitter/)
+- [RTZR 단어별 Timestamp](https://developers.rtzr.ai/docs/stt-file/word_timestamp/)

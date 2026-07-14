@@ -1,9 +1,10 @@
 const API_URL = 'http://localhost:8000/api';
 const API_TIMEOUT_MS = 330_000;
 
-export async function transcribeAudio(audioBlob, filename = 'recording.wav') {
+export async function transcribeAudio(audioBlob, filename = 'recording.wav', keywords = '') {
   const formData = new FormData();
   formData.append('file', audioBlob, filename);
+  formData.append('keywords', keywords);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
