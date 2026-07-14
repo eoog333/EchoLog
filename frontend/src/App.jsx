@@ -20,8 +20,14 @@ function App() {
 
   const handleStart = async () => {
     setError('');
-    await startRecording();
-    setAppState('recording');
+    try {
+      await startRecording();
+      setAppState('recording');
+    } catch (err) {
+      console.error(err);
+      setError(err.message || '마이크를 시작할 수 없습니다.');
+      setAppState('idle');
+    }
   };
 
   const handleStop = async () => {

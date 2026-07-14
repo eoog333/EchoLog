@@ -92,6 +92,9 @@ POST http://localhost:8000/api/transcribe
   Returns: { reflection, raw_transcript, paragraphs, mode, processing_time }
 ```
 
+요청은 최대 5분 30초 동안 기다리며, 시간 초과와 백엔드 연결 실패를 구분해
+사용자에게 오류 메시지를 표시합니다.
+
 ---
 
 ## 실행 방법

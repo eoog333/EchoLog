@@ -21,6 +21,9 @@ logger = logging.getLogger(__name__)
 # 중복 판단 유사도 임계값 (0~1, 높을수록 엄격)
 DUPLICATE_THRESHOLD = 0.8
 
+# 인접 발화가 이 시간 안에 반복된 경우에만 STT 중복으로 판단
+DUPLICATE_MAX_GAP_SECONDS = 3.0
+
 # 사건 구분 시간 간격 (초): 이보다 긴 침묵이면 다른 사건으로 간주
 EVENT_GAP_SECONDS = 10.0
 
@@ -112,16 +115,19 @@ def _similarity(a: str, b: str) -> float:
 def remove_duplicates(utterances: list[Utterance]) -> list[Utterance]:
     """
     유사도 기반 중복 발화 제거.
-    이전 발화와의 유사도가 DUPLICATE_THRESHOLD 이상이면 제거합니다.
+    직전 발화와 시간상 가깝고 유사도가 DUPLICATE_THRESHOLD 이상인 경우만
+    STT 중복으로 판단합니다. 다른 사건에서 반복된 내용은 보존합니다.
     """
     if not utterances:
         return []
 
     result = [utterances[0]]
     for current in utterances[1:]:
-        is_duplicate = any(
-            _similarity(current.msg, prev.msg) >= DUPLICATE_THRESHOLD
-            for prev in result[-3:]  # 최근 3개만 비교 (성능)
+        previous = result[-1]
+        gap = current.start_at - previous.end_at
+        is_duplicate = (
+            gap <= DUPLICATE_MAX_GAP_SECONDS
+            and _similarity(current.msg, previous.msg) >= DUPLICATE_THRESHOLD
         )
         if not is_duplicate:
             result.append(current)

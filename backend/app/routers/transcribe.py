@@ -3,6 +3,7 @@ import time
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 
 from app.config import get_settings
 from app.services import reflection_generator, transcript_processor
@@ -49,7 +50,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
             "reflection": str,       # 정제된 회고 텍스트
             "raw_transcript": str,   # RTZR 원본 전사 텍스트
             "paragraphs": [...],     # 사건별 그룹 목록
-            "mode": str,             # "timeline" | "llm"
+            "mode": str,             # 현재는 "timeline"
             "processing_time": float # 처리 시간(초)
         }
     """
@@ -71,7 +72,11 @@ async def transcribe_audio(file: UploadFile = File(...)):
     try:
         # 1. RTZR STT 전사
         client = get_rtzr_client()
-        rtzr_result = client.transcribe(audio_bytes, filename=filename)
+        rtzr_result = await run_in_threadpool(
+            client.transcribe,
+            audio_bytes,
+            filename=filename,
+        )
         raw_transcript = get_raw_transcript(rtzr_result)
 
         # 2. Transcript 후처리
@@ -99,7 +104,10 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
     except RTZRError as e:
         logger.error(f"RTZR 오류: {e}")
-        raise HTTPException(status_code=502, detail=f"STT 처리 오류: {e}")
+        raise HTTPException(status_code=502, detail=f"STT 처리 오류: {e}") from e
     except Exception as e:
         logger.error(f"예상치 못한 오류: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"서버 오류: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="서버에서 음성 처리 중 오류가 발생했습니다.",
+        ) from e

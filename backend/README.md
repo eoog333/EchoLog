@@ -29,9 +29,11 @@ backend/
 │   └── services/
 │       ├── rtzr_client.py        # RTZR API 클라이언트
 │       ├── transcript_processor.py  # 후처리 파이프라인 (핵심)
-│       └── reflection_generator.py  # Reflection 생성 (LLM or Timeline)
+│       └── reflection_generator.py  # Timeline Reflection 생성
 ├── tests/
 │   ├── conftest.py
+│   ├── test_reflection_generator.py
+│   ├── test_rtzr_client.py
 │   ├── test_transcribe_router.py
 │   └── test_transcript_processor.py
 ├── requirements.txt
@@ -52,6 +54,9 @@ RTZR API와의 모든 통신을 담당합니다.
 | `submit_transcription()` | 음성 파일 전사 요청 → `transcribe_id` 반환 |
 | `get_result()` | 전사 결과 단건 조회 |
 | `transcribe()` | submit + polling 통합 (3초 간격, 최대 5분 대기) |
+
+외부 요청에는 연결 10초·응답 60초 timeout을 적용합니다. 네트워크 오류와
+잘못된 응답 형식은 `RTZRError`로 변환하여 API가 일관된 오류를 반환하도록 합니다.
 
 **RTZR 요청 설정:**
 ```json
@@ -76,15 +81,15 @@ RTZR API와의 모든 통신을 담당합니다.
 RTZR utterances
     ↓ parse_utterances()   — utterance 목록 파싱 (ms → 초 변환)
     ↓ sort_by_time()       — start_at 기준 시간순 정렬
-    ↓ remove_duplicates()  — SequenceMatcher로 유사 문장 제거 (임계값 0.8)
+    ↓ remove_duplicates()  — 인접한 유사 문장 제거 (임계값 0.8, 최대 간격 3초)
     ↓ group_into_events()  — 10초 이상 침묵이면 새 사건으로 그룹핑
     ↓ ProcessedTranscript  — 후처리 완료 결과
 ```
 
 **설계 포인트:**
-- **중복 제거**: `difflib.SequenceMatcher`를 사용해 유사도 0.8 이상인 발화를 중복으로 판단. STT 특성상 같은 말을 반복하거나 재발화하는 경우가 있어 필요.
+- **중복 제거**: 직전 발화와의 간격이 3초 이내이고 유사도 0.8 이상일 때만 STT 중복으로 판단. 다른 사건에서 반복된 내용은 보존.
 - **사건 그룹핑**: 발화 사이 침묵이 10초 이상이면 다른 사건으로 분리. 하루를 사건 단위로 구조화해 Reflection 품질을 높임.
-- **Timeline 출력**: LLM 없이도 `• 사건 내용` 형태로 바로 사용 가능.
+- **Timeline 출력**: `• 사건 내용` 형태로 Reflection을 생성.
 
 ---
 
@@ -92,9 +97,8 @@ RTZR utterances
 
 후처리된 전사 결과를 최종 Reflection 텍스트로 변환합니다.
 
-- **LLM API 키 있음** → 구어체를 자연스러운 서술체로 변환
-- **LLM API 키 없음** → Timeline 형태 그대로 반환 (fallback)
-- LLM은 문체만 다듬으며, 새로운 사실을 추가하거나 내용을 변형하지 않습니다.
+- **현재 버전** → Timeline 형태로 반환
+- **향후 확장** → LLM을 이용한 자연스러운 서술체 변환
 
 ---
 
@@ -107,12 +111,13 @@ POST /api/transcribe
     "reflection": str,        # 정제된 회고 텍스트
     "raw_transcript": str,    # RTZR 원본 전사 텍스트
     "paragraphs": [...],      # 사건별 그룹 목록 (text, start_at)
-    "mode": "timeline|llm",   # 사용된 모드
+    "mode": "timeline",       # 현재 사용 모드
     "processing_time": float  # 처리 시간(초)
   }
 ```
 
 `RTZRClient`는 앱 생명주기 동안 싱글턴으로 유지되어 토큰 캐싱 효과를 얻습니다.
+완료까지 오래 걸리는 STT 폴링은 스레드 풀에서 실행하여 FastAPI 이벤트 루프를 차단하지 않습니다.
 
 ---
 
@@ -127,7 +132,7 @@ cp .env.example .env
 ```env
 RTZR_CLIENT_ID=your_rtzr_client_id
 RTZR_CLIENT_SECRET=your_rtzr_client_secret
-LLM_API_KEY=                # 선택 사항. 비워두면 Timeline 모드로 동작
+LLM_API_KEY=                # 향후 LLM 연동 확장용 (현재 미사용)
 ```
 
 ---

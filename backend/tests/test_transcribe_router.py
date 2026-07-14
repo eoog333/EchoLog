@@ -1,4 +1,7 @@
-from fastapi.testclient import TestClient
+import asyncio
+from types import SimpleNamespace
+
+import httpx
 
 from app.main import app
 from app.routers import transcribe
@@ -30,18 +33,26 @@ class FakeRTZRClient:
         }
 
 
-def test_transcribe_response_keeps_raw_duplicates_and_deduplicates_reflection():
-    original_client = transcribe._rtzr_client
-    transcribe._rtzr_client = FakeRTZRClient()
+def test_transcribe_response_keeps_raw_duplicates_and_deduplicates_reflection(monkeypatch):
+    monkeypatch.setattr(transcribe, "_rtzr_client", FakeRTZRClient())
+    monkeypatch.setattr(
+        transcribe,
+        "get_settings",
+        lambda: SimpleNamespace(llm_api_key=""),
+    )
 
-    try:
-        client = TestClient(app)
-        response = client.post(
-            "/api/transcribe",
-            files={"file": ("recording.wav", b"RIFFfakewav", "audio/wav")},
-        )
-    finally:
-        transcribe._rtzr_client = original_client
+    async def post_transcription():
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(
+            transport=transport,
+            base_url="http://testserver",
+        ) as client:
+            return await client.post(
+                "/api/transcribe",
+                files={"file": ("recording.wav", b"RIFFfakewav", "audio/wav")},
+            )
+
+    response = asyncio.run(post_transcription())
 
     assert response.status_code == 200
     body = response.json()

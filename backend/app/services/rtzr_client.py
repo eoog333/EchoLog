@@ -15,6 +15,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://openapi.vito.ai"
+REQUEST_TIMEOUT = (10, 60)  # 연결 10초, 응답 60초
 
 # RTZR STT 요청 설정
 # - use_disfluency_filter: 추임새(어, 음, 그) 제거
@@ -61,19 +62,27 @@ class RTZRClient:
             return self._token
 
         logger.info("RTZR 인증 토큰 발급 요청")
-        resp = requests.post(
-            f"{BASE_URL}/v1/authenticate",
-            headers={"accept": "application/json"},
-            data={
-                "client_id": self.client_id,
-                "client_secret": self.client_secret,
-            },
-        )
-        if not resp.ok:
-            raise RTZRError(f"인증 실패 ({resp.status_code}): {resp.text}")
+        try:
+            resp = requests.post(
+                f"{BASE_URL}/v1/authenticate",
+                headers={"accept": "application/json"},
+                data={
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                },
+                timeout=REQUEST_TIMEOUT,
+            )
+        except requests.RequestException as exc:
+            raise RTZRError("RTZR 인증 서버에 연결할 수 없습니다.") from exc
 
-        data = resp.json()
-        self._token = data["access_token"]
+        if not resp.ok:
+            raise RTZRError(f"RTZR 인증에 실패했습니다. ({resp.status_code})")
+
+        try:
+            data = resp.json()
+            self._token = data["access_token"]
+        except (ValueError, KeyError, TypeError) as exc:
+            raise RTZRError("RTZR 인증 응답 형식이 올바르지 않습니다.") from exc
         # 만료 6시간, 5분 여유를 두고 갱신
         self._token_expires_at = now + timedelta(hours=6) - timedelta(minutes=5)
         logger.info("RTZR 인증 토큰 발급 완료")
@@ -88,19 +97,27 @@ class RTZRClient:
         token = self.get_token()
         logger.info(f"전사 요청 시작 (파일명: {filename}, 크기: {len(audio_bytes)} bytes)")
 
-        resp = requests.post(
-            f"{BASE_URL}/v1/transcribe",
-            headers={
-                "accept": "application/json",
-                "Authorization": f"Bearer {token}",
-            },
-            data={"config": json.dumps(TRANSCRIBE_CONFIG)},
-            files={"file": (filename, audio_bytes)},
-        )
-        if not resp.ok:
-            raise RTZRError(f"전사 요청 실패 ({resp.status_code}): {resp.text}")
+        try:
+            resp = requests.post(
+                f"{BASE_URL}/v1/transcribe",
+                headers={
+                    "accept": "application/json",
+                    "Authorization": f"Bearer {token}",
+                },
+                data={"config": json.dumps(TRANSCRIBE_CONFIG)},
+                files={"file": (filename, audio_bytes)},
+                timeout=REQUEST_TIMEOUT,
+            )
+        except requests.RequestException as exc:
+            raise RTZRError("RTZR에 전사 요청을 전송할 수 없습니다.") from exc
 
-        transcribe_id = resp.json()["id"]
+        if not resp.ok:
+            raise RTZRError(f"RTZR 전사 요청에 실패했습니다. ({resp.status_code})")
+
+        try:
+            transcribe_id = resp.json()["id"]
+        except (ValueError, KeyError, TypeError) as exc:
+            raise RTZRError("RTZR 전사 요청 응답 형식이 올바르지 않습니다.") from exc
         logger.info(f"전사 요청 완료 (transcribe_id: {transcribe_id})")
         return transcribe_id
 
@@ -114,17 +131,29 @@ class RTZRClient:
             status: "transcribing" | "completed" | "failed"
         """
         token = self.get_token()
-        resp = requests.get(
-            f"{BASE_URL}/v1/transcribe/{transcribe_id}",
-            headers={
-                "accept": "application/json",
-                "Authorization": f"Bearer {token}",
-            },
-        )
-        if not resp.ok:
-            raise RTZRError(f"결과 조회 실패 ({resp.status_code}): {resp.text}")
+        try:
+            resp = requests.get(
+                f"{BASE_URL}/v1/transcribe/{transcribe_id}",
+                headers={
+                    "accept": "application/json",
+                    "Authorization": f"Bearer {token}",
+                },
+                timeout=REQUEST_TIMEOUT,
+            )
+        except requests.RequestException as exc:
+            raise RTZRError("RTZR 전사 결과를 조회할 수 없습니다.") from exc
 
-        return resp.json()
+        if not resp.ok:
+            raise RTZRError(f"RTZR 전사 결과 조회에 실패했습니다. ({resp.status_code})")
+
+        try:
+            result = resp.json()
+        except ValueError as exc:
+            raise RTZRError("RTZR 전사 결과 응답 형식이 올바르지 않습니다.") from exc
+
+        if not isinstance(result, dict):
+            raise RTZRError("RTZR 전사 결과 응답 형식이 올바르지 않습니다.")
+        return result
 
     def transcribe(
         self,
@@ -147,19 +176,22 @@ class RTZRClient:
         """
         transcribe_id = self.submit_transcription(audio_bytes, filename)
 
-        elapsed = 0
-        while elapsed < max_wait:
+        started_at = time.monotonic()
+        deadline = started_at + max_wait
+        while time.monotonic() < deadline:
             result = self.get_result(transcribe_id)
             status = result.get("status")
+            elapsed = int(time.monotonic() - started_at)
 
             if status == "completed":
                 logger.info(f"전사 완료 ({elapsed}초 소요)")
                 return result
             elif status == "failed":
-                raise RTZRError(f"전사 실패: {result}")
+                raise RTZRError("RTZR 전사 처리에 실패했습니다.")
 
             logger.debug(f"전사 진행 중... ({elapsed}초 경과, 상태: {status})")
-            time.sleep(poll_interval)
-            elapsed += poll_interval
+            remaining = deadline - time.monotonic()
+            if remaining > 0:
+                time.sleep(min(poll_interval, remaining))
 
         raise RTZRError(f"전사 타임아웃 ({max_wait}초 초과)")

@@ -48,7 +48,7 @@ flowchart LR
 ### 사전 준비
 
 - Python 3.11+
-- Node.js 18+
+- Node.js 20.19+ 또는 22.12+
 - [RTZR 개발자 계정](https://developers.rtzr.ai/) 및 API 키
 
 ### 1. 저장소 클론
@@ -88,7 +88,7 @@ npm run dev
 ```env
 RTZR_CLIENT_ID=your_client_id
 RTZR_CLIENT_SECRET=your_client_secret
-LLM_API_KEY=          # 선택 — 비워두면 Timeline 모드로 동작
+LLM_API_KEY=          # 향후 LLM 연동 확장용 — 현재는 사용하지 않음
 ```
 
 ---
@@ -158,14 +158,15 @@ sequenceDiagram
 flowchart LR
     A[RTZR utterances] --> B[parse_utterances\nms → 초 변환]
     B --> C[sort_by_time\nstart_at 기준 정렬]
-    C --> D[remove_duplicates\n유사도 0.8 이상 제거]
+    C --> D[remove_duplicates\n인접 발화 유사도 0.8 이상 제거]
     D --> E[group_into_events\n10초 침묵 → 새 사건]
-    E --> F{LLM API Key?}
-    F -->|있음| G[구어체 → 서술체]
-    F -->|없음| H[Timeline 출력]
-    G --> I[📝 Reflection]
-    H --> I
+    E --> F[Timeline 출력]
+    F --> I[📝 Reflection]
+    E -. 향후 확장 .-> G[LLM 서술체 변환]
+    G -.-> I
 ```
+
+> 현재 버전은 Timeline 모드로 동작하며, LLM 기반 서술체 변환은 향후 확장 예정입니다.
 
 | 기능 | 설정값 | 목적 |
 |------|--------|------|
