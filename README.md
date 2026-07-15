@@ -93,12 +93,7 @@ npm install
 npm run dev
 ```
 
-### 준비 완료
-
-모든 설정이 끝났습니다. `npm run dev`를 실행하면 자동으로 브라우저 창이 열립니다. 이제 마이크를 켜고, 친구에게 이야기하듯 오늘 하루를 기록해 보세요.
-
-- **웹 화면 접속:** [http://localhost:5173](http://localhost:5173)
-- **API 명세 (Swagger):** [http://localhost:8000/docs](http://localhost:8000/docs)
+이제 브라우저에서 `http://localhost:5173`을 열어 EchoLog를 확인할 수 있습니다.
 ### 환경변수 (`.env`)
 
 ```env
