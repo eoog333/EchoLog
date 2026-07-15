@@ -3,26 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EchoLog Demo - speak naturally. reflect clearly.</title>
-  <!-- Google Fonts -->
+  <title>EchoLog</title>
+  
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --bg: #090d16;
-      --card-bg: rgba(21, 29, 48, 0.5);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --text: #e2e8f0;
-      --text-muted: #94a3b8;
-      --primary: #3b82f6;
-      --secondary: #8b5cf6;
-      --gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-      --gradient-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-      --success: #10b981;
-      --font-title: 'Outfit', sans-serif;
-      --font-body: 'Inter', sans-serif;
+      --bg: #f9f8f6;
+      --text-main: #2c2a29;
+      --text-muted: #6e6b66;
+      --border: #e6e3dd;
+      --accent: #2c2a29;
+      
+      --font-serif: 'Lora', serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     * {
@@ -31,1025 +28,382 @@
       padding: 0;
     }
 
-    html {
-      scroll-behavior: smooth;
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-      line-height: 1.6;
-    }
-
     body {
-      overflow-x: hidden;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--bg);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #1e293b;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #334155;
-    }
-
-    /* Utility Styles */
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 0 2rem;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .section-title {
-      font-family: var(--font-title);
-      font-size: 2.5rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .section-subtitle {
-      text-align: center;
-      color: var(--text-muted);
-      max-width: 600px;
-      margin: 0 auto 3rem auto;
-      font-size: 1.1rem;
-    }
-
-    /* Header & Navigation */
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      background: rgba(9, 13, 22, 0.8);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--card-border);
-    }
-
-    .nav-container {
+    /* Top Navigation (GitHub Link) */
+    .top-nav {
+      width: 100%;
+      max-width: 800px;
+      padding: 2rem 0;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 70px;
-    }
-
-    .logo {
-      font-family: var(--font-title);
-      font-size: 1.5rem;
-      font-weight: 700;
-      text-decoration: none;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .logo-dot {
-      width: 10px;
-      height: 10px;
-      background: var(--gradient);
-      border-radius: 50%;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover, .nav-links a.active {
-      color: var(--text);
+      justify-content: flex-end;
     }
 
     .github-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      color: var(--text);
+      font-size: 0.85rem;
+      color: var(--text-muted);
       text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: background 0.2s;
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
     }
 
     .github-link:hover {
-      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+
+    /* Main Container */
+    .container {
+      width: 100%;
+      max-width: 800px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-bottom: 10vh;
+      position: relative;
     }
 
     /* Hero Section */
     .hero {
-      padding: 180px 0 100px 0;
-      position: relative;
       text-align: center;
+      margin-bottom: 4rem;
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: 5%;
-      left: 50%;
-      transform: translate(-50%, 0);
-      width: 600px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(0,0,0,0) 100%);
-      filter: blur(50px);
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    .badge {
-      display: inline-flex;
-      padding: 0.4rem 1rem;
-      background: rgba(139, 92, 246, 0.15);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      color: #c084fc;
-      border-radius: 100px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 2rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    .hero.shifted {
+      transform: translateY(-20px);
     }
 
     .hero h1 {
-      font-family: var(--font-title);
-      font-size: 4rem;
-      font-weight: 800;
-      line-height: 1.15;
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      font-weight: 500;
+      letter-spacing: -0.03em;
       margin-bottom: 1.5rem;
-      letter-spacing: -0.02em;
-    }
-
-    .hero h1 span {
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--text-main);
     }
 
     .hero p {
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       color: var(--text-muted);
-      max-width: 700px;
-      margin: 0 auto 3rem auto;
-      font-weight: 400;
+      max-width: 400px;
+      margin: 0 auto;
+      font-weight: 300;
     }
 
-    .hero-ctas {
+    /* Buttons */
+    .btn-group {
       display: flex;
       justify-content: center;
       gap: 1.5rem;
+      margin-top: 3rem;
     }
 
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.8rem 2rem;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--gradient);
-      color: white;
-      border: none;
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
-    }
-
-    .btn-primary:hover {
-      background: var(--gradient-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-2px);
-    }
-
-    /* Section Styling */
-    section {
-      padding: 100px 0;
-      border-top: 1px solid rgba(255, 255, 255, 0.03);
-    }
-
-    /* Introduction Section */
-    .intro-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-    }
-
-    .intro-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 2.5rem;
-      border-radius: 16px;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-
-    .intro-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(139, 92, 246, 0.3);
-    }
-
-    .card-icon {
-      width: 50px;
-      height: 50px;
-      background: rgba(59, 130, 246, 0.1);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary);
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .intro-card:nth-child(2) .card-icon {
-      background: rgba(139, 92, 246, 0.1);
-      color: var(--secondary);
-    }
-
-    .intro-card:nth-child(3) .card-icon {
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--success);
-    }
-
-    .intro-card h3 {
-      font-family: var(--font-title);
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    .intro-card p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    /* UX Simulator Section */
-    .simulator-container {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 3rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2rem;
-    }
-
-    .sim-tabs {
-      display: flex;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 4px;
-      border-radius: 100px;
-      border: 1px solid var(--card-border);
-      width: 100%;
-      max-width: 550px;
-    }
-
-    .sim-tab-btn {
-      flex: 1;
-      padding: 0.6rem 1.2rem;
-      border: none;
       background: transparent;
-      color: var(--text-muted);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 0.8rem 2.5rem;
+      font-family: var(--font-sans);
       font-size: 0.9rem;
-      font-weight: 600;
+      font-weight: 400;
       border-radius: 100px;
       cursor: pointer;
-      transition: all 0.2s;
-      outline: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
+      transition: all 0.3s ease;
+      letter-spacing: 0.02em;
     }
 
-    .sim-tab-btn.active {
-      background: var(--gradient);
-      color: white;
-    }
-
-    .sim-screen {
-      width: 100%;
-      max-width: 600px;
-      background: #0d1323;
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 16px;
-      padding: 2rem;
-      min-height: 320px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-    }
-
-    .sim-content {
-      display: none;
-      width: 100%;
-      text-align: center;
-      animation: fadeIn 0.3s forwards;
-    }
-
-    .sim-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Simulator Screen-Specific Elements */
-    .record-btn-sim {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: rgba(239, 68, 68, 0.2);
-      border: 2px solid #ef4444;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ef4444;
-      cursor: pointer;
-      margin: 1.5rem auto;
-      font-size: 1.5rem;
-      transition: all 0.2s;
-    }
-
-    .record-btn-sim:hover {
-      transform: scale(1.05);
-      background: rgba(239, 68, 68, 0.3);
-    }
-
-    .sim-recording-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #ef4444;
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .pulse-dot {
-      width: 12px;
-      height: 12px;
-      background-color: #ef4444;
-      border-radius: 50%;
-      animation: pulse 1.2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(0.9); opacity: 0.6; }
-      50% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(0.9); opacity: 0.6; }
-    }
-
-    .sim-wave {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 4px;
-      height: 40px;
-      margin: 1.5rem 0;
-    }
-
-    .wave-bar {
-      width: 4px;
-      height: 10px;
-      background: var(--gradient);
-      border-radius: 10px;
-      animation: wave 1.2s infinite ease-in-out;
-    }
-
-    .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 25px; }
-    .wave-bar:nth-child(3) { animation-delay: 0.2s; height: 35px; }
-    .wave-bar:nth-child(4) { animation-delay: 0.3s; height: 15px; }
-    .wave-bar:nth-child(5) { animation-delay: 0.4s; height: 30px; }
-
-    @keyframes wave {
-      0%, 100% { transform: scaleY(1); }
-      50% { transform: scaleY(2.2); }
-    }
-
-    .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.05);
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border-left-color: var(--primary);
-      animation: spin 1s linear infinite;
-      margin: 2rem auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Simulator Done View */
-    .timeline-mock {
-      text-align: left;
-      width: 100%;
-      max-height: 250px;
-      overflow-y: auto;
-      padding-right: 0.5rem;
-    }
-
-    .timeline-item-mock {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-    }
-
-    .timeline-time {
-      font-weight: 700;
-      color: var(--primary);
-      min-width: 45px;
-      font-size: 0.9rem;
-    }
-
-    .timeline-text {
-      font-size: 0.9rem;
-      color: #cbd5e1;
-    }
-
-    /* Setup Section */
-    .setup-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .setup-tab-btn {
-      padding: 0.6rem 1.5rem;
-      border-radius: 8px;
-      font-weight: 600;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--card-border);
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .setup-tab-btn.active {
-      background: var(--text);
+    .btn:hover, .btn.active {
+      border-color: var(--accent);
+      background: var(--accent);
       color: var(--bg);
-      border-color: var(--text);
     }
 
-    .code-container {
-      background: #070a13;
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 1.5rem;
+    /* Content Area */
+    .content-area {
       position: relative;
+      min-height: 300px;
+      width: 100%;
+    }
+
+    .content-section {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .content-section.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      position: relative; /* Take up space when active */
+    }
+
+    /* Intro Typography */
+    .intro-text {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .intro-text p {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      line-height: 1.9;
+      color: var(--text-main);
       margin-bottom: 1.5rem;
     }
 
-    .code-container pre {
-      overflow-x: auto;
-      font-family: 'Courier New', Courier, monospace;
+    .intro-text p:last-child {
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    /* Setup Code Styling */
+    .setup-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .os-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .os-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
       font-size: 0.9rem;
-      color: #e2e8f0;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .os-tab.active {
+      color: var(--text-main);
+    }
+
+    .os-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -9px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .code-block-wrapper {
+      position: relative;
+      display: none;
+    }
+
+    .code-block-wrapper.active {
+      display: block;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .code-block {
+      background: #f0eee9;
+      border-radius: 4px;
+      padding: 1.5rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      color: #3b3a37;
+      overflow-x: auto;
+      line-height: 1.5;
     }
 
     .copy-btn {
       position: absolute;
       top: 10px;
       right: 10px;
-      padding: 0.4rem 0.8rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
       color: var(--text-muted);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
+      transition: all 0.2s ease;
     }
 
     .copy-btn:hover {
-      background: rgba(255, 255, 255, 0.10);
-      color: var(--text);
+      color: var(--text-main);
+      border-color: var(--text-main);
     }
 
-    .setup-instructions {
-      display: none;
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
-    .setup-instructions.active {
-      display: block;
-    }
-
-    .warning-box {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      border-radius: 10px;
-      padding: 1rem 1.5rem;
-      color: #f59e0b;
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    /* Tech Specs Section */
-    .specs-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 3rem;
-    }
-
-    .diagram-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 2.5rem;
-    }
-
-    .diagram-card h3 {
-      font-family: var(--font-title);
-      font-size: 1.5rem;
-      margin-bottom: 2rem;
-      border-left: 4px solid var(--primary);
-      padding-left: 0.8rem;
-    }
-
-    /* Styled CSS Architecture Flow */
-    .flow-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      position: relative;
-    }
-
-    .flow-step {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.03);
-      padding: 1.2rem;
-      border-radius: 10px;
-      position: relative;
-    }
-
-    .step-num {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.9rem;
-      flex-shrink: 0;
-    }
-
-    .flow-step:nth-child(2) .step-num { background: var(--secondary); }
-    .flow-step:nth-child(3) .step-num { background: var(--success); }
-
-    .step-info h4 {
-      font-size: 1.05rem;
-      margin-bottom: 0.2rem;
-    }
-
-    .step-info p {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    /* Footer */
-    footer {
-      padding: 4rem 0;
-      background: #05070c;
-      border-top: 1px solid var(--card-border);
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    /* Mobile Responsive Styles */
-    @media (max-width: 768px) {
+    /* Responsive */
+    @media (max-width: 600px) {
       .hero h1 { font-size: 2.8rem; }
-      .nav-links { display: none; }
-      .hero-ctas { flex-direction: column; gap: 1rem; }
-      .section-title { font-size: 2rem; }
+      .btn-group { flex-direction: column; gap: 1rem; align-items: center; }
+      .btn { width: 200px; }
+      .intro-text p { font-size: 1.1rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header & Navigation -->
-  <header>
-    <div class="container nav-container">
-      <a href="#" class="logo">
-        <div class="logo-dot"></div>
-        EchoLog Demo
-      </a>
-      <ul class="nav-links">
-        <li><a href="#intro" class="active">소개</a></li>
-        <li><a href="#ux-demo">체험 (UX)</a></li>
-        <li><a href="#setup">시작하기</a></li>
-        <li><a href="#tech-specs">기술 분석</a></li>
-      </ul>
-      <a href="https://github.com/eoog333/EchoLog-Demo" class="github-link" target="_blank">
-        <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        GitHub
-      </a>
-    </div>
-  </header>
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <a href="https://github.com/eoog333/EchoLog-Demo" target="_blank" class="github-link">GitHub</a>
+  </nav>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="container">
-      <div class="badge">Vite + FastAPI + RTZR STT</div>
-      <h1>말하듯 자연스럽게,<br><span>하루 흐름을 한눈에.</span></h1>
-      <p>EchoLog는 음성 회고를 텍스트로 단순 변환하는 것을 넘어, 인공지능 STT 전처리 기능과 정교한 시간순 정렬 알고리즘을 사용해 가독성 높은 하루 타임라인을 구성합니다.</p>
-      <div class="hero-ctas">
-        <a href="#ux-demo" class="btn btn-primary">구동방식 체험하기</a>
-        <a href="#setup" class="btn btn-secondary">로컬에 배포하기</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Introduction Section -->
-  <section id="intro">
-    <div class="container">
-      <h2 class="section-title">프로젝트 해결 과제</h2>
-      <p class="section-subtitle">기존의 음성 메모 방식과 텍스트 전사(STT)가 가지는 한계를 극복하고 개발자와 사용자에게 최고의 재현성과 가독성을 선물합니다.</p>
+  <!-- Main Container -->
+  <main class="container">
+    
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+      <h1>EchoLog</h1>
+      <p>하루를 친구에게 이야기하듯 말하면,<br>시간의 흐름으로 정리해 줍니다.</p>
       
-      <div class="intro-grid">
-        <div class="intro-card">
-          <div class="card-icon">🎤</div>
-          <h3>자연스러운 음성 필터링</h3>
-          <p>RTZR STT의 간투어 필터(Disfluency Filter)를 연동하여 말할 때 무의식적으로 뱉는 "어, 음, 그" 같은 추임새를 제거하고 알맹이 발화만 정제합니다.</p>
-        </div>
-        <div class="intro-card">
-          <div class="card-icon">🕒</div>
-          <h3>시간 흐름 보존</h3>
-          <p>시간 정보가 포함된 말소리를 감지하여, 발화의 실제 시간 순서대로 문장을 자동 그룹화하고 타임라인 형태의 회고 기록을 구성합니다.</p>
-        </div>
-        <div class="intro-card">
-          <div class="card-icon">🔗</div>
-          <h3>100% 실행 재현성</h3>
-          <p>맥과 윈도우 환경에 최적화된 독립 가상환경 매뉴얼을 준수하여, 저장소 클론 후 개발자가 즉시 에러 없이 로컬 실행을 보장합니다.</p>
-        </div>
+      <div class="btn-group">
+        <button class="btn" onclick="showSection('setup', this)">시작하기</button>
+        <button class="btn" onclick="showSection('intro', this)">소개하기</button>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- UX Simulator Section -->
-  <section id="ux-demo">
-    <div class="container">
-      <h2 class="section-title">가상 시뮬레이터 (UX)</h2>
-      <p class="section-subtitle">로컬 서버를 켜지 않고도 브라우저에서 EchoLog가 동작하는 4단계 상태 전환과 사용자 경험을 직접 테스트해보세요.</p>
+    <!-- Content Area -->
+    <div class="content-area">
       
-      <div class="simulator-container">
-        <!-- Simulator Nav Tab -->
-        <div class="sim-tabs">
-          <button class="sim-tab-btn active" onclick="setSimState(1)">
-            <span>1</span> 대기 (Idle)
-          </button>
-          <button class="sim-tab-btn" onclick="setSimState(2)">
-            <span>2</span> 녹음 (Recording)
-          </button>
-          <button class="sim-tab-btn" onclick="setSimState(3)">
-            <span>3</span> 전송 (Processing)
-          </button>
-          <button class="sim-tab-btn" onclick="setSimState(4)">
-            <span>4</span> 완료 (Done)
-          </button>
+      <!-- Intro Section -->
+      <section id="section-intro" class="content-section">
+        <div class="intro-text">
+          <p>
+            녹음 버튼을 누르고 편하게 오늘 있었던 일을 이야기하세요.<br>
+            당신의 목소리는 인공지능(RTZR STT API)을 거치며<br>불필요한 추임새들이 정제됩니다.
+          </p>
+          <p>
+            그리고 발화된 시간 순서대로 아름답게 나뉘어,<br>
+            가장 읽기 편안한 한 편의 타임라인 회고록으로 완성됩니다.
+          </p>
         </div>
+      </section>
 
-        <!-- Simulator Content Screen -->
-        <div class="sim-screen">
+      <!-- Setup Section -->
+      <section id="section-setup" class="content-section">
+        <div class="setup-container">
           
-          <!-- STATE 1: IDLE -->
-          <div id="sim-state-1" class="sim-content active">
-            <h3 style="margin-bottom: 0.8rem;">🎙 하루 기록 말하기</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">녹음 버튼을 클릭하거나 음성 파일을 드래그하여 업로드를 준비합니다.</p>
-            <div class="record-btn-sim" onclick="setSimState(2)">⏺</div>
-            <p style="font-size: 0.8rem; color: var(--primary);">[시작 버튼 클릭 시 가상 녹음 단계로 이동]</p>
+          <div class="os-tabs">
+            <button class="os-tab active" onclick="switchOS('mac')">macOS / Linux</button>
+            <button class="os-tab" onclick="switchOS('windows')">Windows</button>
           </div>
 
-          <!-- STATE 2: RECORDING -->
-          <div id="sim-state-2" class="sim-content">
-            <div class="sim-recording-indicator">
-              <div class="pulse-dot"></div>
-              <span>녹음 중... (00:08)</span>
-            </div>
-            <p style="font-size: 0.95rem; color: #f1f5f9;">"오늘 아침 9시에 출근해서 기획 회의를 하고, 음... 오후 2시에 코딩을 시작했어."</p>
-            <div class="sim-wave">
-              <div class="wave-bar"></div>
-              <div class="wave-bar"></div>
-              <div class="wave-bar"></div>
-              <div class="wave-bar"></div>
-              <div class="wave-bar"></div>
-            </div>
-            <button class="btn btn-secondary" onclick="setSimState(3)" style="padding: 0.5rem 1.5rem; font-size: 0.85rem; border-color: #ef4444; color: #ef4444;">⏺ 녹음 완료 및 전송</button>
-          </div>
+          <!-- Mac Code -->
+          <div id="code-mac" class="code-block-wrapper active">
+            <button class="copy-btn" onclick="copyCode('pre-mac')">Copy</button>
+            <pre class="code-block" id="pre-mac">
+git clone https://github.com/eoog333/EchoLog-Demo.git
+cd EchoLog-Demo
 
-          <!-- STATE 3: PROCESSING -->
-          <div id="sim-state-3" class="sim-content">
-            <h3 style="margin-bottom: 0.5rem;">RTZR STT API 분석 중</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem;">음성 데이터를 전송받아 비동기 폴링 분석 및 중복 발화 제거를 수행하고 있습니다.</p>
-            <div class="spinner"></div>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">예상 완료 시간: 약 3초</p>
-          </div>
-
-          <!-- STATE 4: DONE -->
-          <div id="sim-state-4" class="sim-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
-              <span style="font-weight: 700; color: var(--success); font-size: 0.9rem;">🕒 시간순 타임라인 기록 완료</span>
-              <button class="btn btn-secondary" onclick="setSimState(1)" style="padding: 0.3rem 0.8rem; font-size: 0.75rem;">초기화</button>
-            </div>
-            
-            <div class="timeline-mock">
-              <div class="timeline-item-mock">
-                <span class="timeline-time">09:00</span>
-                <span class="timeline-text">출근 후 오전 기획 회의를 진행함.</span>
-              </div>
-              <div class="timeline-item-mock">
-                <span class="timeline-time">12:30</span>
-                <span class="timeline-text">동료들과 함께 회사 근처에서 점심 식사.</span>
-              </div>
-              <div class="timeline-item-mock">
-                <span class="timeline-time">14:00</span>
-                <span class="timeline-text">프로젝트 코딩 시작 및 후처리 모듈 설계 진행.</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Setup Section -->
-  <section id="setup">
-    <div class="container">
-      <h2 class="section-title">로컬 실행 및 배포 (재현성)</h2>
-      <p class="section-subtitle">운영체제 맞춤형 명령어를 지원하여, 개발자의 가상환경 구동 오류를 방지하고 재현을 보장합니다.</p>
-
-      <div class="warning-box">
-        <span>⚠️</span>
-        <strong>중요:</strong> 백엔드 구동 시 루트폴더가 아닌 <code>backend</code> 디렉토리 내부로 들어간 뒤 가상환경을 실행해야 정상 작동합니다.
-      </div>
-
-      <!-- Setup OS Selectors -->
-      <div class="setup-tabs">
-        <button class="setup-tab-btn active" onclick="setSetupOS('mac')">🍏 macOS / Linux</button>
-        <button class="setup-tab-btn" onclick="setSetupOS('windows')">🪟 Windows</button>
-      </div>
-
-      <!-- OS: MAC -->
-      <div id="setup-mac" class="setup-instructions active">
-        <h3>1. 저장소 클론 및 백엔드 실행 (터미널 1)</h3>
-        <div class="code-container">
-          <button class="copy-btn" onclick="copyCode('code-mac-back')">복사</button>
-          <pre id="code-mac-back">git clone https://github.com/eoog333/EchoLog-Demo.git
-cd EchoLog-Demo/backend
+# 1. 백엔드 실행 (터미널 1)
+cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# .env에 발급받은 RTZR API 키 입력 후 구동
-uvicorn app.main:app --reload</pre>
-        </div>
-      </div>
+uvicorn app.main:app --reload
 
-      <!-- OS: WINDOWS -->
-      <div id="setup-windows" class="setup-instructions">
-        <h3>1. 저장소 클론 및 백엔드 실행 (터미널 1)</h3>
-        <div class="code-container">
-          <button class="copy-btn" onclick="copyCode('code-win-back')">복사</button>
-          <pre id="code-win-back">git clone https://github.com/eoog333/EchoLog-Demo.git
-cd EchoLog-Demo/backend
+# 2. 프론트엔드 실행 (새로운 터미널 2)
+cd ../frontend
+npm install
+npm run dev</pre>
+          </div>
+
+          <!-- Windows Code -->
+          <div id="code-windows" class="code-block-wrapper">
+            <button class="copy-btn" onclick="copyCode('pre-windows')">Copy</button>
+            <pre class="code-block" id="pre-windows">
+git clone https://github.com/eoog333/EchoLog-Demo.git
+cd EchoLog-Demo
+
+# 1. 백엔드 실행 (터미널 1)
+cd backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
-# .env에 발급받은 RTZR API 키 입력 후 구동
-uvicorn app.main:app --reload</pre>
-        </div>
-      </div>
+uvicorn app.main:app --reload
 
-      <!-- Common Frontend Setup -->
-      <h3>2. 프론트엔드 실행 (새로운 터미널 2)</h3>
-      <div class="code-container">
-        <button class="copy-btn" onclick="copyCode('code-front')">복사</button>
-        <pre id="code-front">cd EchoLog-Demo/frontend
+# 2. 프론트엔드 실행 (새로운 터미널 2)
+cd ../frontend
 npm install
 npm run dev</pre>
-      </div>
-      <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-top: 1rem;">
-        구동 후 브라우저에서 <a href="http://localhost:5173" target="_blank" style="color: var(--primary);">http://localhost:5173</a>으로 접속하면 데모를 즉시 테스트해볼 수 있습니다.
-      </p>
-    </div>
-  </section>
-
-  <!-- Tech Specs Section -->
-  <section id="tech-specs">
-    <div class="container">
-      <h2 class="section-title">기술 분석 및 파이프라인</h2>
-      <p class="section-subtitle">백엔드 후처리 엔진 및 RTZR STT API가 결합한 오디오 데이터 처리 워크플로우를 분석합니다.</p>
-
-      <div class="specs-grid">
-        <!-- Architecture Diagram Card -->
-        <div class="diagram-card">
-          <h3>시스템 전체 플로우</h3>
-          <div class="flow-steps">
-            <div class="flow-step">
-              <div class="step-num">1</div>
-              <div class="step-info">
-                <h4>Web Audio API (Frontend)</h4>
-                <p>브라우저 환경에 구애받지 않도록 미디어 버퍼를 수집하고 WAV(audio/wav)로 포맷 변환 후 전송</p>
-              </div>
-            </div>
-            <div class="flow-step">
-              <div class="step-num">2</div>
-              <div class="step-info">
-                <h4>FastAPI (Backend)</h4>
-                <p>멀티파트 파일을 받아 RTZR API로 전사 요청 및 완료될 때까지 비동기 3초 간격 롱 폴링(Polling) 수행</p>
-              </div>
-            </div>
-            <div class="flow-step">
-              <div class="step-num">3</div>
-              <div class="step-info">
-                <h4>후처리 엔진 (Post-Processor)</h4>
-                <p>발화 간격 및 텍스트 유사도를 비교하여 0.8 이상의 중복을 걸러내고 타임라인별 그룹 재배열</p>
-              </div>
-            </div>
           </div>
-        </div>
 
-        <!-- Pipeline Algorithm Card -->
-        <div class="diagram-card">
-          <h3>후처리 파이프라인 핵심 알고리즘</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
-            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 10px;">
-              <h4 style="color: var(--primary); margin-bottom: 0.5rem;">1. 중복 제거 (Dedup)</h4>
-              <p style="font-size: 0.85rem; color: var(--text-muted);">직전 발화와의 시각 차가 3초 이내이고 의미 유사도가 0.8 이상일 때, 중복된 문장을 자동 탈락시켜 간결함을 유지합니다.</p>
-            </div>
-            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 10px;">
-              <h4 style="color: var(--secondary); margin-bottom: 0.5rem;">2. 시간대별 문단화</h4>
-              <p style="font-size: 0.85rem; color: var(--text-muted);">문장 앞머리에 위치하는 시간 표현(예: '아침', '오후 3시')을 파싱해 시간대별 하루 흐름을 보존하며 문단을 가릅니다.</p>
-            </div>
-            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 10px;">
-              <h4 style="color: var(--success); margin-bottom: 0.5rem;">3. 자연스러운 문체 정리</h4>
-              <p style="font-size: 0.85rem; color: var(--text-muted);">의미가 끊기지 않도록 문장 끝 단위로 결합하여, 문단마다 2~3개의 정돈된 단락 흐름을 제공합니다.</p>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      <p>&copy; 2026 EchoLog Project. All rights reserved.</p>
-      <p style="font-size: 0.8rem; margin-top: 0.5rem; color: rgba(255,255,255,0.2);">본 페이지는 면접관의 원활한 코드 리뷰 및 가이드 검토를 돕기 위해 생성된 공식 데모 사이트입니다.</p>
     </div>
-  </footer>
+  </main>
 
   <script>
-    // Simulator State Manager
-    function setSimState(stateNum) {
-      // Update Simulator Navigation Tabs
-      const tabs = document.querySelectorAll('.sim-tab-btn');
-      tabs.forEach((tab, index) => {
-        if (index + 1 === stateNum) {
-          tab.classList.add('active');
-        } else {
-          tab.classList.remove('active');
-        }
+    function showSection(sectionId, btnElement) {
+      // Manage button active states
+      document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      // Shift Hero upwards gently
+      document.getElementById('hero').classList.add('shifted');
+
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(sec => {
+        sec.classList.remove('active');
+        // Give time for fade out before setting display none logic (handled by position absolute)
       });
 
-      // Update Screen Contents
-      const screens = document.querySelectorAll('.sim-content');
-      screens.forEach((screen, index) => {
-        if (index + 1 === stateNum) {
-          screen.classList.add('active');
-        } else {
-          screen.classList.remove('active');
-        }
-      });
+      // Show target section
+      setTimeout(() => {
+        document.getElementById('section-' + sectionId).classList.add('active');
+      }, 50);
     }
 
-    // Setup OS Tab switcher
-    function setSetupOS(os) {
-      const macBtn = document.querySelector('.setup-tab-btn:nth-child(1)');
-      const winBtn = document.querySelector('.setup-tab-btn:nth-child(2)');
-      const macInstructions = document.getElementById('setup-mac');
-      const winInstructions = document.getElementById('setup-windows');
+    function switchOS(os) {
+      document.querySelectorAll('.os-tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
 
-      if (os === 'mac') {
-        macBtn.classList.add('active');
-        winBtn.classList.remove('active');
-        macInstructions.classList.add('active');
-        winInstructions.classList.remove('active');
-      } else {
-        macBtn.classList.remove('active');
-        winBtn.classList.add('active');
-        macInstructions.classList.remove('active');
-        winInstructions.classList.add('active');
-      }
+      document.querySelectorAll('.code-block-wrapper').forEach(block => block.classList.remove('active'));
+      document.getElementById('code-' + os).classList.add('active');
     }
 
-    // Code Clipboard Copy
-    function copyCode(elementId) {
-      const preEl = document.getElementById(elementId);
-      const textToCopy = preEl.innerText;
-      
-      navigator.clipboard.writeText(textToCopy).then(() => {
-        const copyBtn = preEl.previousElementSibling;
-        const originalText = copyBtn.innerText;
-        copyBtn.innerText = '복사 완료!';
-        copyBtn.style.color = '#10b981';
-        copyBtn.style.borderColor = '#10b981';
-        
-        setTimeout(() => {
-          copyBtn.innerText = originalText;
-          copyBtn.style.color = '';
-          copyBtn.style.borderColor = '';
-        }, 2000);
-      }).catch(err => {
-        console.error('클립보드 복사 실패:', err);
+    function copyCode(preId) {
+      const codeText = document.getElementById(preId).innerText;
+      navigator.clipboard.writeText(codeText).then(() => {
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = 'Copied';
+        setTimeout(() => { btn.innerText = originalText; }, 2000);
       });
     }
-
-    // Active Nav Link highlight on scroll
-    window.addEventListener('scroll', () => {
-      const sections = document.querySelectorAll('section');
-      const navLinks = document.querySelectorAll('.nav-links a');
-      
-      let currentSectionId = '';
-      sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= (sectionTop - 150)) {
-          currentSectionId = section.getAttribute('id');
-        }
-      });
-
-      navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${currentSectionId}`) {
-          link.classList.add('active');
-        }
-      });
-    });
   </script>
 </body>
 </html>
