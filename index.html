@@ -242,15 +242,20 @@
     }
 
     .code-block {
-      background: #F0EFEA;
-      border: 1px solid var(--border);
-      border-radius: 4px;
+      background: #1E1B18;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: 6px;
       padding: 1.5rem;
       font-family: 'Courier New', Courier, monospace;
       font-size: 0.85rem;
-      color: #3B3937;
+      color: #ECEAE4;
       overflow-x: auto;
-      line-height: 1.5;
+      line-height: 1.6;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .code-comment {
+      color: #8E8A82;
     }
 
     .copy-btn {
@@ -370,16 +375,16 @@
 git clone https://github.com/eoog333/EchoLog-Demo.git
 cd EchoLog-Demo
 
-# 1. 백엔드 실행 (터미널 1)
+<span class="code-comment"># 1. 백엔드 실행 (터미널 1)</span>
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# .env 파일에 RTZR API 키 입력
+<span class="code-comment"># .env 파일에 RTZR API 키 입력</span>
 uvicorn app.main:app --reload
 
-# 2. 프론트엔드 실행 (새로운 터미널 2)
+<span class="code-comment"># 2. 프론트엔드 실행 (새로운 터미널 2)</span>
 cd ../frontend
 npm install
 npm run dev</pre>
@@ -392,16 +397,16 @@ npm run dev</pre>
 git clone https://github.com/eoog333/EchoLog-Demo.git
 cd EchoLog-Demo
 
-# 1. 백엔드 실행 (터미널 1)
+<span class="code-comment"># 1. 백엔드 실행 (터미널 1)</span>
 cd backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
-# .env 파일에 RTZR API 키 입력
+<span class="code-comment"># .env 파일에 RTZR API 키 입력</span>
 uvicorn app.main:app --reload
 
-# 2. 프론트엔드 실행 (새로운 터미널 2)
+<span class="code-comment"># 2. 프론트엔드 실행 (새로운 터미널 2)</span>
 cd ../frontend
 npm install
 npm run dev</pre>
@@ -418,7 +423,7 @@ npm run dev</pre>
           <pre class="code-block" style="margin-bottom: 2rem;">
 RTZR_CLIENT_ID=your_client_id
 RTZR_CLIENT_SECRET=your_client_secret
-LLM_API_KEY=          # 향후 LLM 연동 확장용 — 현재 미사용</pre>
+LLM_API_KEY=          <span class="code-comment"># 향후 LLM 연동 확장용 — 현재 미사용</span></pre>
 
           <h2>로컬 접속 주소</h2>
           <ul>
