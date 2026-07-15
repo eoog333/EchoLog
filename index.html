@@ -359,62 +359,63 @@
 
           <h2>실행 단계</h2>
           <p style="margin-bottom: 1.5rem;">
-            운영체제에 맞는 탭을 선택하고 명령어를 실행해 주세요. 
-            가상환경을 활성화하려면 루트 폴더가 아닌 <code>backend</code> 디렉토리 내부로 반드시 이동해야 합니다.
+            각 단계별 명령어를 터미널에 순서대로 복사하여 실행해 주세요.
           </p>
 
-          <div class="os-tabs">
+          <h3>1. 저장소 클론 및 디렉토리 진입</h3>
+          <div class="code-block-wrapper active" style="margin-bottom: 1.5rem;">
+            <button class="copy-btn" onclick="copyCode('pre-clone')">Copy</button>
+            <pre class="code-block" id="pre-clone">
+git clone https://github.com/eoog333/EchoLog-Demo.git
+cd EchoLog-Demo</pre>
+          </div>
+
+          <h3>2. 백엔드 서버 실행 (터미널 1)</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+            반드시 <code>backend</code> 폴더 내부로 진입한 후 가상환경을 활성화해야 합니다. OS에 맞는 탭을 선택하세요.
+          </p>
+          <div class="os-tabs" style="margin-bottom: 1rem;">
             <button class="os-tab active" onclick="switchOS('mac')">macOS / Linux</button>
             <button class="os-tab" onclick="switchOS('windows')">Windows</button>
           </div>
 
           <!-- Mac Code -->
-          <div id="code-mac" class="code-block-wrapper active">
+          <div id="code-mac" class="code-block-wrapper active" style="margin-bottom: 1.5rem;">
             <button class="copy-btn" onclick="copyCode('pre-mac')">Copy</button>
             <pre class="code-block" id="pre-mac">
-git clone https://github.com/eoog333/EchoLog-Demo.git
-cd EchoLog-Demo
-
-<span class="code-comment"># 1. 백엔드 실행 (터미널 1)</span>
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
 <span class="code-comment"># .env 파일에 RTZR API 키 입력</span>
-uvicorn app.main:app --reload
-
-<span class="code-comment"># 2. 프론트엔드 실행 (새로운 터미널 2)</span>
-cd ../frontend
-npm install
-npm run dev</pre>
+uvicorn app.main:app --reload</pre>
           </div>
 
           <!-- Windows Code -->
-          <div id="code-windows" class="code-block-wrapper">
+          <div id="code-windows" class="code-block-wrapper" style="margin-bottom: 1.5rem;">
             <button class="copy-btn" onclick="copyCode('pre-windows')">Copy</button>
             <pre class="code-block" id="pre-windows">
-git clone https://github.com/eoog333/EchoLog-Demo.git
-cd EchoLog-Demo
-
-<span class="code-comment"># 1. 백엔드 실행 (터미널 1)</span>
 cd backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
 <span class="code-comment"># .env 파일에 RTZR API 키 입력</span>
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload</pre>
+          </div>
 
-<span class="code-comment"># 2. 프론트엔드 실행 (새로운 터미널 2)</span>
-cd ../frontend
+          <h3>3. 프론트엔드 실행 (새로운 터미널 2)</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+            백엔드가 켜진 상태를 유지해야 하므로, **새로운 터미널 창**을 열어 프로젝트 루트 폴더(<code>EchoLog-Demo</code>)에서 실행해 주세요.
+          </p>
+          <div class="code-block-wrapper active" style="margin-bottom: 2rem;">
+            <button class="copy-btn" onclick="copyCode('pre-front')">Copy</button>
+            <pre class="code-block" id="pre-front">
+cd frontend
 npm install
 npm run dev</pre>
           </div>
-
-          <p style="margin-top: 1rem; margin-bottom: 2rem;">
-            * 프론트엔드는 백엔드가 정상적으로 작동 중일 때 실행되어야 합니다. 반드시 터미널 2개를 각각 실행 상태로 유지해 주세요.
-          </p>
 
           <h2>환경변수 설정 (`.env`)</h2>
           <p>
