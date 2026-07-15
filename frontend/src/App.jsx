@@ -82,7 +82,7 @@ function App() {
     <div className="app-container">
       <header className="header">
         <h1>EchoLog</h1>
-        <p>Speak naturally. Reflect clearly.</p>
+        <p>대화하듯 편하게, 하루를 기록하세요.</p>
       </header>
 
       <main className="main-content">
