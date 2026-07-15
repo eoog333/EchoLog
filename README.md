@@ -2,7 +2,7 @@
 
 > **Speak naturally. Reflect clearly.**
 
-🌐 **[프로젝트 소개 페이지](https://eoog333.github.io/EchoLog/)** *(추후 배포 시 활성화 예정)*
+🌐 **[프로젝트 소개 페이지](https://eoog333.github.io/EchoLog-Demo/)**
 
 하루를 친구에게 이야기하듯 말하면, RTZR STT API로 전사하고
 읽기 쉬운 **시간순 하루 기록**으로 정리해 주는 웹 앱입니다.
@@ -45,8 +45,8 @@ EchoLog는 RTZR STT의 전처리 기능과 가벼운 후처리를 결합해, 말
 ### 1. 저장소 클론
 
 ```bash
-git clone https://github.com/eoog333/EchoLog.git
-cd EchoLog
+git clone https://github.com/eoog333/EchoLog-Demo.git
+cd EchoLog-Demo
 ```
 
 ### 2. 백엔드 서버 실행 (터미널 1)
@@ -54,6 +54,7 @@ cd EchoLog
 먼저 백엔드 폴더로 이동하여 가상환경을 세팅합니다. 사용하시는 OS에 맞는 명령어를 입력해 주세요.
 
 **🍎 Mac / Linux 사용자**
+
 ```bash
 cd backend
 python3 -m venv .venv
@@ -65,6 +66,7 @@ uvicorn app.main:app --reload
 ```
 
 **🪟 Windows 사용자**
+
 ```bash
 cd backend
 python -m venv .venv
