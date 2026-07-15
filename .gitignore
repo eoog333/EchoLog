@@ -30,3 +30,5 @@ dist-ssr/
 # 비공개 문서
 docs/명세.md
 docs/보고서.md
+docs/DEMO_CHECKLIST.md
+docs/구현_의사결정_기록.md

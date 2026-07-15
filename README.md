@@ -1,6 +1,8 @@
-# EchoLog
+# EchoLog Demo
 
 > **Speak naturally. Reflect clearly.**
+
+🌐 **[프로젝트 소개 페이지](https://eoog333.github.io/EchoLog/)** *(추후 배포 시 활성화 예정)*
 
 하루를 친구에게 이야기하듯 말하면, RTZR STT API로 전사하고
 읽기 쉬운 **시간순 하루 기록**으로 정리해 주는 웹 앱입니다.
@@ -16,20 +18,6 @@ EchoLog는 RTZR STT의 전처리 기능과 가벼운 후처리를 결합해, 말
 - ✂️ 추임새 제거 · 숫자 표기 정리 · 인접 중복 정리
 - 🕒 실제 녹음 시각 순서로 문장을 묶은 하루 흐름
 - 📝 필요할 때 원본 전사문 확인
-
----
-
-## 구조 한눈에 보기
-
-```mermaid
-flowchart LR
-    A[🎤 음성 녹음\n또는 파일 업로드] --> B[React Frontend]
-    B -->|audio| C[FastAPI Backend]
-    C -->|STT 요청| D[(RTZR STT API)]
-    D -->|utterances + timestamps| C
-    C -->|후처리| E[시간순 하루 기록]
-    E --> B
-```
 
 ---
 
@@ -61,22 +49,37 @@ git clone https://github.com/eoog333/EchoLog.git
 cd EchoLog
 ```
 
-### 2. 백엔드 실행
+### 2. 백엔드 서버 실행 (터미널 1)
 
+먼저 백엔드 폴더로 이동하여 가상환경을 세팅합니다. 사용하시는 OS에 맞는 명령어를 입력해 주세요.
+
+**🍎 Mac / Linux 사용자**
 ```bash
 cd backend
-python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env           # .env 파일에 API 키 입력
+cp .env.example .env
+# .env 파일을 열어 발급받은 RTZR API 키를 입력하세요.
 uvicorn app.main:app --reload
 ```
 
-`http://localhost:8000/docs`에서 Swagger UI를 확인할 수 있습니다.
+**🪟 Windows 사용자**
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+# .env 파일을 열어 발급받은 RTZR API 키를 입력하세요.
+uvicorn app.main:app --reload
+```
 
-### 3. 프론트엔드 실행
+서버 실행 후 `http://localhost:8000/docs`에서 Swagger UI 접속이 가능합니다.
 
-새 터미널을 열고 실행합니다.
+### 3. 프론트엔드 실행 (터미널 2)
+
+> **주의:** 백엔드가 실행된 상태를 유지해야 하므로, **반드시 새로운 터미널을 하나 더 열어주세요!**
 
 ```bash
 cd frontend
@@ -84,7 +87,7 @@ npm install
 npm run dev
 ```
 
-`http://localhost:5173`에서 앱을 확인할 수 있습니다.
+이제 브라우저에서 `http://localhost:5173`을 열어 EchoLog를 확인할 수 있습니다.
 
 ### 환경변수 (`.env`)
 
@@ -92,6 +95,20 @@ npm run dev
 RTZR_CLIENT_ID=your_client_id
 RTZR_CLIENT_SECRET=your_client_secret
 LLM_API_KEY=          # 향후 LLM 연동 확장용 — 현재 미사용
+```
+
+---
+
+## 구조 한눈에 보기
+
+```mermaid
+flowchart LR
+    A[🎤 음성 녹음\n또는 파일 업로드] --> B[React Frontend]
+    B -->|audio| C[FastAPI Backend]
+    C -->|STT 요청| D[(RTZR STT API)]
+    D -->|utterances + timestamps| C
+    C -->|후처리| E[시간순 하루 기록]
+    E --> B
 ```
 
 ---
