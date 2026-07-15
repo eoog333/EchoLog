@@ -344,8 +344,20 @@
 
       <!-- Setup Section -->
       <section id="section-setup" class="content-section">
-        <div class="setup-container">
-          
+        <div class="setup-container intro-text">
+          <h2>사전 준비</h2>
+          <ul>
+            <li><strong>Python:</strong> 3.11+ 설치 필요</li>
+            <li><strong>Node.js:</strong> 20.19+ 또는 22.12+ 설치 필요</li>
+            <li><strong>RTZR API 키:</strong> <a href="https://developers.rtzr.ai/" target="_blank" style="color: var(--text-main); text-decoration: underline;">리턴제로 개발자 사이트</a> 가입 및 API 발급 필요</li>
+          </ul>
+
+          <h2>실행 단계</h2>
+          <p style="margin-bottom: 1.5rem;">
+            운영체제에 맞는 탭을 선택하고 명령어를 실행해 주세요. 
+            가상환경을 활성화하려면 루트 폴더가 아닌 <code>backend</code> 디렉토리 내부로 반드시 이동해야 합니다.
+          </p>
+
           <div class="os-tabs">
             <button class="os-tab active" onclick="switchOS('mac')">macOS / Linux</button>
             <button class="os-tab" onclick="switchOS('windows')">Windows</button>
@@ -394,6 +406,25 @@ cd ../frontend
 npm install
 npm run dev</pre>
           </div>
+
+          <p style="margin-top: 1rem; margin-bottom: 2rem;">
+            * 프론트엔드는 백엔드가 정상적으로 작동 중일 때 실행되어야 합니다. 반드시 터미널 2개를 각각 실행 상태로 유지해 주세요.
+          </p>
+
+          <h2>환경변수 설정 (`.env`)</h2>
+          <p>
+            <code>backend/.env</code> 파일에 다음 값들을 설정합니다.
+          </p>
+          <pre class="code-block" style="margin-bottom: 2rem;">
+RTZR_CLIENT_ID=your_client_id
+RTZR_CLIENT_SECRET=your_client_secret
+LLM_API_KEY=          # 향후 LLM 연동 확장용 — 현재 미사용</pre>
+
+          <h2>로컬 접속 주소</h2>
+          <ul>
+            <li><strong>Swagger API 명세:</strong> <a href="http://localhost:8000/docs" target="_blank" style="color: var(--text-main); text-decoration: underline;">http://localhost:8000/docs</a></li>
+            <li><strong>프론트엔드 웹 화면:</strong> <a href="http://localhost:5173" target="_blank" style="color: var(--text-main); text-decoration: underline;">http://localhost:5173</a></li>
+          </ul>
 
         </div>
       </section>
