@@ -39,7 +39,7 @@ function App() {
         throw new Error('녹음된 오디오가 없습니다.');
       }
       
-      const response = await transcribeAudio(audioBlob, 'recording.webm', keywords);
+      const response = await transcribeAudio(audioBlob, 'recording.wav', keywords);
       setResult(response);
       setAppState('done');
     } catch (err) {

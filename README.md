@@ -16,7 +16,7 @@ EchoLog는 RTZR STT의 전처리 기능과 가벼운 후처리를 결합해, 말
 
 - 🎤 말하기만 하면 텍스트로 전사
 - ✂️ 추임새 제거 · 숫자 표기 정리 · 인접 중복 정리
-- 🕒 실제 녹음 시각 순서로 문장을 묶은 하루 흐름
+- 🕒 녹음 시작 후 경과 시각 순서로 문장을 묶은 하루 흐름
 - 📝 필요할 때 원본 전사문 확인
 
 ---
@@ -25,7 +25,7 @@ EchoLog는 RTZR STT의 전처리 기능과 가벼운 후처리를 결합해, 말
 
 1. **🎤 녹음 시작** — 마이크 권한을 허용하고 하루를 편하게 말합니다.
 2. **⏹ 녹음 완료** — 음성 파일을 백엔드로 전송합니다.
-3. **오늘 하루 흐름 확인** — 실제 녹음 시각 순서로 정리된 기록을 읽습니다.
+3. **오늘 하루 흐름 확인** — 녹음 시작 후 경과 시각 순서로 정리된 기록을 읽습니다.
 4. **원본 전사 보기** (선택) — 전사문을 비교·확인합니다.
 
 `오늘의 주제`에는 서비스명이나 고유명사처럼 정확히 인식하고 싶은 단어를 선택적으로 입력할 수 있습니다.
@@ -99,7 +99,6 @@ npm run dev
 ```env
 RTZR_CLIENT_ID=your_client_id
 RTZR_CLIENT_SECRET=your_client_secret
-LLM_API_KEY=          # 향후 LLM 연동 확장용 — 현재 미사용
 ```
 
 ---
@@ -133,13 +132,16 @@ flowchart LR
 
 ## RTZR API 활용
 
+같은 음성에 대해 두 번의 전사를 요청합니다. 원본 전사는 필터를 끈 STT 결과를 제공하고,
+시간순 기록용 전사에는 아래 전처리 기능을 적용합니다.
+
 | 기능 | 설정 | EchoLog에서의 역할 |
 |---|---|---|
 | Batch STT + Polling | `/v1/transcribe` 요청 후 상태 조회 | 음성 파일을 비동기로 전사 |
 | 간투어 필터 | `use_disfluency_filter: true` | `어`, `음` 같은 불필요한 표현 감소 |
 | ITN | `use_itn: true` | 숫자·단위·약어를 읽기 쉬운 표기로 변환 |
 | 문단 나누기 | `use_paragraph_splitter: true` | 후처리에 쓸 짧은 전사 단위 생성 |
-| 단어별 Timestamp | `use_word_timestamp: true` | 시간 표현이 나온 실제 발화 시각 확인 |
+| 단어별 Timestamp | `use_word_timestamp: true` | 시간 표현이 나온 발화의 녹음 시작 기준 시각 확인 |
 | 키워드 부스팅 | `keywords` | 사용자가 입력한 주제·고유명사의 인식 보조 |
 
 ---
@@ -160,7 +162,7 @@ flowchart LR
 - 발화 순서와 사실은 바꾸지 않습니다.
 - 문단은 문장 끝에서만 나눕니다.
 - `아침`, `점심`, `저녁` 같은 시간 표현은 문장 맨 앞에 있을 때만 문단 분리의 보조 힌트로 사용합니다.
-- 화면에는 `00:00` 형식의 실제 녹음 시각을 일관되게 표시합니다.
+- 화면에는 녹음 시작 후 경과 시각을 `00:00` 형식으로 일관되게 표시합니다.
 - 자연스러운 요약·문장 재서술은 향후 LLM 연동으로 확장합니다.
 
 ---
@@ -180,14 +182,12 @@ EchoLog/
 │   │       └── reflection_generator.py  # 향후 요약 확장 지점
 │   ├── tests/
 │   └── README.md
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx                      # 상태 기반 단일 페이지
-│   │   ├── hooks/useAudioRecorder.js    # 브라우저 녹음
-│   │   └── services/api.js              # 백엔드 API 호출
-│   └── README.md
-└── docs/
-    └── EchoLog_기획_구현.md
+└── frontend/
+    ├── src/
+    │   ├── App.jsx                      # 상태 기반 단일 페이지
+    │   ├── hooks/useAudioRecorder.js    # 브라우저 녹음
+    │   └── services/api.js              # 백엔드 API 호출
+    └── README.md
 ```
 
 ---
@@ -196,7 +196,6 @@ EchoLog/
 
 - [Backend README](./backend/README.md) — 모듈 설계, API 스펙, 테스트
 - [Frontend README](./frontend/README.md) — 녹음·상태 관리·화면 구성
-- [초기 기획 문서](./docs/EchoLog_기획_구현.md)
 
 ---
 
