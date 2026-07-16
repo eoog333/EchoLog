@@ -1,6 +1,6 @@
 # EchoLog Demo
 
-> **Speak naturally. Reflect clearly.**
+> **대화하듯이 음성으로 편하게 녹음하는 하루 기록용 앱입니다.**
 
 🌐 **[프로젝트 소개 페이지](https://eoog333.github.io/EchoLog-Demo/)**
 
@@ -215,3 +215,4 @@ npm run build
 - [RTZR Batch STT](https://developers.rtzr.ai/docs/stt-file/)
 - [RTZR 문단 나누기](https://developers.rtzr.ai/docs/stt-file/paragraph-splitter/)
 - [RTZR 단어별 Timestamp](https://developers.rtzr.ai/docs/stt-file/word_timestamp/)
+- [리턴제로 블로그](https://blog.rtzr.ai/stt-api-auto-chapters-timestamps/)
